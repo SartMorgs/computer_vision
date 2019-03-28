@@ -8,41 +8,19 @@ Imagem img;
 
 
 int main(){
-	FILE *ppm_file, *pgm_file;
+	FILE *ppm_file, *pgm_file, *pg, *pp;
 	PIXEL *p;
 	int index;
 
+	// LEITURA ARQUIVOS PGM E PPM
 	p = NULL;
-
-    cout<< "INICIO DO PROGRAMA!" << "\n";
-
-	//img.readPGM(pgm_file, "apple.pgm");
+	img.readPGM(pgm_file, "apple.pgm");
 	img.readPPM(ppm_file, "apple.ppm");
+    p = img.getImg();
 
-	p = img.getImg();
+    // ESCRITA ARQUIVOS PGM E PPM
+    img.writePGM(pg, "apple_pgm.pgm");
+    img.writePPM(pp, "apple_ppm.ppm");
 
-	if(p == NULL) cout << "VAZIO!" << "\n";
-
-	cout << "TAMANHO DA IMAGEM: " << img.getHeigth() << " x " << img.getWidth() << "\n";
-/*
-	cout << "IMAGEM PGM:" << "\n";
-	index = 0;
-	for(unsigned int k = 0; k < (img.getWidth()*img.getHeigth()); k++){
-		cout << p[k].i << "\t";
-		if((k / img.getWidth()) > index){
-			cout << "\n";
-			index = k / img.getWidth();
-		}
-	}
-*/
-	cout << "IMAGEM PPM:" << "\n";
-	index = 0;
-	for(unsigned int k = 0; k < (img.getWidth()*img.getHeigth()); k++){
-		cout << p[k].r << "  " << p[k].g << " " << p[k].b << " " << "\t";
-		if((k / img.getWidth()) > index){
-			cout << "\n";
-			index++;
-		}
-	}
 	return 0;
 }

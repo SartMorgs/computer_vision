@@ -121,15 +121,17 @@ void Imagem::readPGM(FILE* arq, const char* filename){
 
 
 void Imagem::writePGM(FILE* arq, const char* filename){
-
+    int maxsize = 255;
 	arq = fopen(filename, "w");
 
 	if(arq == NULL) cout<< "Erro na abertura do arquivo" << "\n";
 	else{
-		fprintf(arq, "%s %d %d 255", type, width, heigth);
+		fprintf(arq, "P2\n");
+		fprintf(arq, "%d %d ", width, heigth);
+		fprintf(arq, "%d\n", maxsize);
 
 		for(unsigned int k = 0; k < (width*heigth); k++){
-			fprintf(arq, "%d", px[k].i);
+			fprintf(arq, "%d ", px[k].i);
 		}
 	}
 
@@ -166,15 +168,17 @@ void Imagem::readPPM(FILE* arq, const char* filename){
 
 
 void Imagem::writePPM(FILE* arq, const char* filename){
-
+    int maxsize = 255;
 	arq = fopen(filename, "w");
 
 	if(arq == NULL) cout<< "Erro na abertura do arquivo" << "\n";
 	else{
-		fprintf(arq, "%s %d %d 255", type, width, heigth);
+		fprintf(arq, "P3\n");
+		fprintf(arq, "%d %d ", width, heigth);
+		fprintf(arq, "%d\n", maxsize);
 
 		for(unsigned int k = 0; k < (width*heigth); k++){
-			fprintf(arq, "%d %d %d", px[k].r, px[k].g, px[k].b);
+			fprintf(arq, "%d %d %d ", px[k].r, px[k].g, px[k].b);
 		}
 	}
 
