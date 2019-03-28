@@ -270,12 +270,16 @@ void Imagem::thresholdRGB(u_int thR, u_int thG, u_int thB){
 
 void Imagem::thresholdRGB(u_int thRlow, u_int thRhigh, u_int thGlow, u_int thGhigh, u_int thBlow, u_int thBhigh){
     for(u_int k = 0; k < (width*heigth); k++){
-		if(((u_int) px[k].r > thRlow) && ((u_int) px[k].r < thRhigh)) px[k].r = 255;
-		else px[k].r = 0;
-		if(((u_int) px[k].g > thGlow) && ((u_int) px[k].g < thGhigh)) px[k].g = 255;
-		else px[k].g = 0;
-		if(((u_int) px[k].b > thBlow) && ((u_int) px[k].b < thBhigh)) px[k].b = 255;
-		else px[k].b = 0;
+		if(((u_int) px[k].r > thRlow) && ((u_int) px[k].r < thRhigh) && ((u_int) px[k].g > thGlow) && ((u_int) px[k].g < thGhigh) && ((u_int) px[k].b > thBlow) && ((u_int) px[k].b < thBhigh)){
+            px[k].r = 255;
+            px[k].g = 255;
+            px[k].b = 255;
+		}
+		else{
+            px[k].r = 0;
+            px[k].g = 0;
+            px[k].b = 0;
+		}
 	}
 }
 
