@@ -24,7 +24,7 @@ class Imagem{
 		char* getType();
 		void setPGM(PIXEL* pgm);
 		void setPPM(PIXEL* ppm);
-		void setImg(PIXEL* pgm, PIXEL* ppm, int w, int h);
+		void setImg(PIXEL* pgm, PIXEL* ppm, PIXEL* img, int w, int h);
 		PIXEL* getImg();
 
 		// Funções de leitura e escrita
@@ -87,18 +87,17 @@ void Imagem::setPPM(PIXEL* ppm){
     }
 }
 
-void Imagem::setImg(PIXEL* pgm, PIXEL* ppm, int w, int h){
+void Imagem::setImg(PIXEL* pgm, PIXEL* ppm, PIXEL* img, int w, int h){
 
 }
 
 PIXEL* Imagem::getImg(){
-	return px;
+    return px;
 }
 
 void Imagem::readPGM(FILE* arq, const char* filename){
 	int w, h, maxsize;
 	char t[2];
-	PIXEL *pxl;
 
 	arq = fopen(filename, "r");
 
@@ -110,14 +109,12 @@ void Imagem::readPGM(FILE* arq, const char* filename){
 		setWidth(w);
 		setHeigth(h);
 
-		pxl = (PIXEL*) malloc(sizeof(PIXEL)*w*h);
+		px = (PIXEL*) malloc(sizeof(PIXEL)*w*h);
 
 		for(unsigned int k = 0; k < (w*h); k++){
-			fscanf(arq, "%d", &pxl[k].i);
+			fscanf(arq, "%d", &px[k].i);
 		}
 	}
-
-	setPGM(pxl);
 
 	fclose(arq);
 }
@@ -142,7 +139,6 @@ void Imagem::writePGM(FILE* arq, const char* filename){
 void Imagem::readPPM(FILE* arq, const char* filename){
 	int w, h, maxsize;
 	char t[2];
-	PIXEL *pxl;
 
 	arq = fopen(filename, "r");
 
@@ -154,14 +150,16 @@ void Imagem::readPPM(FILE* arq, const char* filename){
 		setWidth(w);
 		setHeigth(h);
 
-		pxl = (PIXEL*) malloc(sizeof(PIXEL)*w*h*3);
 
-		for(unsigned int k = 0; k < (w*h); k++){
-			fscanf(arq, "%d %d %d", &pxl[k].r, &pxl[k].g, &pxl[k].b);
-		}
+        if(px == NULL){
+            px = (PIXEL*) malloc(sizeof(PIXEL)*w*h*3);
+        }
+        for(unsigned int k = 0; k < (w*h); k++){
+            fscanf(arq, "%d %d %d", &px[k].r, &px[k].g, &px[k].b);
+        }
+
+
 	}
-
-	setPPM(pxl);
 
 	fclose(arq);
 }
