@@ -348,6 +348,7 @@ void Imagem::normMahalanobis(u_int *vectorR, u_int *vectorG, u_int *vectorB, u_i
     mB = average(vectorB, tam);
 
 
+
     //Linha 1
     mCovariance[0] = covariance(vectorR, vectorR, tam, mR, mR);
     mCovariance[1] = covariance(vectorR, vectorG, tam, mR, mG);
@@ -378,8 +379,10 @@ void Imagem::normMahalanobis(u_int *vectorR, u_int *vectorG, u_int *vectorB, u_i
 
     index = 0;
     for(u_int k = 0; k < (width * heigth); k++){
-        dist = sqrt((aux[index] * (px[k].r - mR)) + (aux[index + 1] * (px[k].g - mG)) + (aux[index + 2] * (px[k].b - mB)));
+        dist = sqrt(abs((aux[index] * (px[k].r - mR)) + (aux[index + 1] * (px[k].g - mG)) + (aux[index + 2] * (px[k].b - mB))));
         //printf("%.4f\n", dist);
+        //printf("%.4f\n", (aux[index] * (px[k].r - mR)) + (aux[index + 1] * (px[k].g - mG)) + (aux[index + 2] * (px[k].b - mB)));
+
         index += 3;
         if(dist < (double)th){
             px[k].r = 0;
