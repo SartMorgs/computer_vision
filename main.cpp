@@ -24,39 +24,44 @@ int main(){
     //u_int bpts[30] = {147, 11, 127, 137, 35, 11, 17, 130, 135, 140, 144, 154, 83, 19, 151, 162, 192, 165, 57, 58, 115, 43, 160, 60, 181, 16, 77, 140, 55, 25};
 
     // Ônibus Verde
-    u_int rpts[30] = {162, 161, 163, 165, 164, 157, 162, 164, 163, 162, 164, 163, 162, 163, 161, 163, 162, 162, 162, 163, 163, 161, 162, 162, 161, 163, 160, 160, 158, 158};
-    u_int gpts[30] = {254, 253, 253, 255, 253, 252, 253, 254, 255, 254, 254, 255, 253, 255, 254, 255, 255, 255, 254, 253, 252, 253, 255, 255, 253, 255, 253, 253, 250, 250};
-    u_int bpts[30] = {65, 64, 67, 72, 73, 62, 74, 71, 70, 67, 68, 70, 70, 66, 62, 66, 63, 63, 65, 67, 72, 66, 63, 63, 64, 66, 61, 61, 61, 61};
+    u_int rpts[45] = {162, 161, 163, 165, 164, 157, 162, 164, 163, 162, 164, 163, 162, 163, 161, 163, 162, 162, 162, 163, 163, 161, 162, 162, 161, 163, 160, 160, 158, 158, 144, 140, 140, 144, 136, 164, 147, 139, 141, 142, 145, 187, 157, 135, 141};
+    u_int gpts[45] = {254, 253, 253, 255, 253, 252, 253, 254, 255, 254, 254, 255, 253, 255, 254, 255, 255, 255, 254, 253, 252, 253, 255, 255, 253, 255, 253, 253, 250, 250, 247, 243, 244, 247, 250, 244, 246, 241, 250, 252, 249, 247, 244};
+    u_int bpts[45] = {65, 64, 67, 72, 73, 62, 74, 71, 70, 67, 68, 70, 70, 66, 62, 66, 63, 63, 65, 67, 72, 66, 63, 63, 64, 66, 61, 61, 61, 61, 44, 40, 35, 37, 36, 93, 47, 38, 39, 37, 36, 126, 54, 39, 41};
 
     // Cálculo da média dos pontos
-    avR = average(rpts, 30); avG = average(gpts, 30); avB = average(bpts, 30);
+    avR = average(rpts, 45); avG = average(gpts, 45); avB = average(bpts, 45);
 
     // L1-Norm
     p = NULL;
-	img.readPPM(ppm_file, "amostra10.ppm");
+	img.readPPM(ppm_file, "Amostra/amostra10.ppm");
     p = img.getImg();
-    img.normL1(avR, avG, avB, 25);
+    img.normL1(avR, avG, avB, 15);
+    //img.writePPM(pp, "testel1.ppm");
     img.writePPM(pp, "Resultados/amostra_10/result_l1.ppm");
 
     // L2-Norm
     p = NULL;
-	img.readPPM(ppm_file, "amostra10.ppm");
+	img.readPPM(ppm_file, "Amostra/amostra10.ppm");
     p = img.getImg();
-    img.normL2(avR, avG, avB, 25);
+    img.normL2(avR, avG, avB, 50);
+    //img.writePPM(pp, "testel2.ppm");
     img.writePPM(pp, "Resultados/amostra_10/result_l2.ppm");
 
     // Mahalanobis
     p = NULL;
-	img.readPPM(ppm_file, "amostra10.ppm");
+	img.readPPM(ppm_file, "Amostra/amostra9.ppm");
     p = img.getImg();
-    img.normMahalanobis(rpts, gpts, bpts, 30, 25);
-    img.writePPM(pp, "Resultados/amostra_10/result_m.ppm");
+    img.normMahalanobis(rpts, gpts, bpts, 45, 4);
+    //img.writePPM(pp, "testem.ppm");
+    img.writePPM(pp, "Resultados/amostra_9/result_m.ppm");
+
 
     // KNN
     p = NULL;
-	img.readPPM(ppm_file, "amostra10.ppm");
+	img.readPPM(ppm_file, "Amostra/amostra10.ppm");
     p = img.getImg();
-    img.normKneighbors(rpts, gpts, bpts, 30, 15, 12);
+    img.normKneighbors(rpts, gpts, bpts, 45, 30, 35);
+    //img.writePPM(pp, "testek.ppm");
     img.writePPM(pp, "Resultados/amostra_10/result_k.ppm");
 
 	return 0;

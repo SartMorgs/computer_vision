@@ -13,15 +13,15 @@ typedef struct pixel{
 
 class Imagem{
 	private:
-		u_int width, heigth, n;
+		u_int width, height, n;
 		char type[2];
 		PIXEL *px;
 	public:
-		// Componente necessários da imagem
+		// Componentes necessários da imagem
 		void setWidth(u_int w);
 		u_int getWidth();
-		void setHeigth(u_int h);
-		u_int getHeigth();
+		void setHeight(u_int h);
+		u_int getHeight();
 		void setType(char t[]);
 		char* getType();
 		void setPGM(PIXEL* pgm);
@@ -65,12 +65,12 @@ u_int Imagem::getWidth(){
 	return width;
 }
 
-void Imagem::setHeigth(u_int h){
-	heigth = h;
+void Imagem::setHeight(u_int h){
+	height = h;
 }
 
-u_int Imagem::getHeigth(){
-	return heigth;
+u_int Imagem::getHeight(){
+	return height;
 }
 
 void Imagem::setType(char t[]){
@@ -116,7 +116,7 @@ void Imagem::readPGM(FILE* arq, const char* filename){
 
 		setType(t);
 		width = w;
-		heigth = h;
+		height = h;
 		n = w * h;
 
 		px = (PIXEL*) malloc(sizeof(PIXEL)*w*h);
@@ -137,7 +137,7 @@ void Imagem::writePGM(FILE* arq, const char* filename){
 	if(arq == NULL) cout<< "Erro na abertura do arquivo" << "\n";
 	else{
 		fprintf(arq, "P2\n");
-		fprintf(arq, "%u %u ", width, heigth);
+		fprintf(arq, "%u %u ", width, height);
 		fprintf(arq, "%u\n", maxsize);
 
 		for(u_int k = 0; k < n; k++){
@@ -160,7 +160,7 @@ void Imagem::readPPM(FILE* arq, const char* filename){
 
 		setType(t);
 		width = w;
-		heigth = h;
+		height = h;
 		n = w * h;
 
 
@@ -185,7 +185,7 @@ void Imagem::writePPM(FILE* arq, const char* filename){
 	if(arq == NULL) cout<< "Erro na abertura do arquivo" << "\n";
 	else{
 		fprintf(arq, "P3\n");
-		fprintf(arq, "%u %u ", width, heigth);
+		fprintf(arq, "%u %u ", width, height);
 		fprintf(arq, "%u\n", maxsize);
 
 		for(u_int k = 0; k < n; k++){
@@ -341,7 +341,7 @@ void Imagem::normMahalanobis(u_int *vectorR, u_int *vectorG, u_int *vectorB, u_i
     double mR, mG, mB;
 
     mCovariance = (double*) malloc(9*sizeof(double));
-    aux = (double*)malloc(width*heigth*3*sizeof(double));
+    aux = (double*)malloc(width*height*3*sizeof(double));
 
     mR = average(vectorR, tam);
     mG = average(vectorG, tam);
@@ -364,7 +364,7 @@ void Imagem::normMahalanobis(u_int *vectorR, u_int *vectorG, u_int *vectorB, u_i
 
     mCov_inv = inverse(mCovariance);
 
-    for(u_int k = 0; k < (width * heigth); k++){
+    for(u_int k = 0; k < (width * height); k++){
         aux[index] = ((px[k].r - mR) * mCov_inv[0]) + ((px[k].g - mG) * mCov_inv[1]) + ((px[k].b - mB) * mCov_inv[2]);
         aux[index + 1] = ((px[k].r - mR) * mCov_inv[3]) + ((px[k].g - mG) * mCov_inv[4]) + ((px[k].b - mB) * mCov_inv[5]);
         aux[index + 2] = ((px[k].r - mR) * mCov_inv[6]) + ((px[k].g - mG) * mCov_inv[7]) + ((px[k].b - mB) * mCov_inv[8]);
@@ -372,13 +372,13 @@ void Imagem::normMahalanobis(u_int *vectorR, u_int *vectorG, u_int *vectorB, u_i
 
     }
 
-    /*for(u_int k = 0; k < (width*heigth*3); k++){
+    /*for(u_int k = 0; k < (width*height*3); k++){
         printf("%.7f ", aux[k]);
     }
     */
 
     index = 0;
-    for(u_int k = 0; k < (width * heigth); k++){
+    for(u_int k = 0; k < (width * height); k++){
         dist = sqrt(abs((aux[index] * (px[k].r - mR)) + (aux[index + 1] * (px[k].g - mG)) + (aux[index + 2] * (px[k].b - mB))));
         //printf("%.4f\n", dist);
         //printf("%.4f\n", (aux[index] * (px[k].r - mR)) + (aux[index + 1] * (px[k].g - mG)) + (aux[index + 2] * (px[k].b - mB)));
@@ -403,9 +403,9 @@ void Imagem::normKneighbors(u_int *vectorR, u_int *vectorG, u_int *vectorB, u_in
     double de;
     PIXEL *aux;
 
-    aux = (PIXEL*) malloc(width*heigth*sizeof(PIXEL));
+    aux = (PIXEL*) malloc(width*height*sizeof(PIXEL));
 
-    for(u_int k = 0; k < (width*heigth); k++){
+    for(u_int k = 0; k < (width*height); k++){
         aux[k].r = px[k].r;
         aux[k].g = px[k].g;
         aux[k].b = px[k].b;
@@ -421,7 +421,7 @@ void Imagem::normKneighbors(u_int *vectorR, u_int *vectorG, u_int *vectorB, u_in
 
         //printf("%.4f  %.4f  %.4f \n", mR, mG, mB);
 
-        for(u_int k = 0; k < (width*heigth); k++){
+        for(u_int k = 0; k < (width*height); k++){
             de = ((px[k].r - mR)*(px[k].r - mR)) + ((px[k].g - mG)*(px[k].g - mG)) + ((px[k].b - mB)*(px[k].b - mB));
 
             if(sqrt(de) < (double)th){
