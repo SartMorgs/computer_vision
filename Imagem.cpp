@@ -7,6 +7,7 @@
 using namespace std;
 
 typedef unsigned int u_int;
+typedef unsigned char u_char;
 typedef struct pixel{
 	u_int r, g, b, i;
 }PIXEL;
@@ -17,7 +18,8 @@ class Imagem{
 		char type[2];
 		PIXEL *px;
 	public:
-		// Componentes necessários da imagem
+
+		// Componente necessários da imagem
 		void setWidth(u_int w);
 		u_int getWidth();
 		void setHeight(u_int h);
@@ -26,8 +28,14 @@ class Imagem{
 		char* getType();
 		void setPGM(PIXEL* pgm);
 		void setPPM(PIXEL* ppm);
+		void setPPM(u_int R[], u_int G[], u_int B[]);
 		void setImg(PIXEL* pgm, PIXEL* ppm, PIXEL* img, u_int w, u_int h);
 		PIXEL* getImg();
+
+		// Funções separar componentes RGB
+	    u_int* getR();
+	    u_int* getG();
+	    u_int* getB();
 
 		// Funções de leitura e escrita
 		void readPGM(FILE* arq, const char* filename);
@@ -54,6 +62,8 @@ class Imagem{
 		void normL2(u_int refR, u_int refG, u_int refB, u_int th);
 		void normMahalanobis(u_int *vectorR, u_int *vectorG, u_int *vectorB, u_int n, u_int th);
 		void normKneighbors(u_int *vectorR, u_int *vectorG, u_int *vectorB, u_int s, u_int numOrb, u_int th);
+
+		void convolve(int kernel[], u_int s);
 
 };
 
@@ -96,12 +106,56 @@ void Imagem::setPPM(PIXEL* ppm){
     }
 }
 
+void Imagem::setPPM(u_int R[], u_int G[], u_int B[]){
+    for(u_int k = 0; k < n; k++){
+        px[k].r = R[k];
+        px[k].g = G[k];
+        px[k].b = B[k];
+    }
+}
+
 void Imagem::setImg(PIXEL* pgm, PIXEL* ppm, PIXEL* img, u_int w, u_int h){
 
 }
 
 PIXEL* Imagem::getImg(){
     return px;
+}
+
+u_int* Imagem::getR(){
+    u_int *result;
+
+    result = (u_int*) malloc(n*sizeof(u_int));
+
+    for(u_int k = 0; k < n; k++){
+        result[k] = px[k].r;
+    }
+
+    return result;
+}
+
+u_int* Imagem::getG(){
+    u_int *result;
+
+    result = (u_int*) malloc(n*sizeof(u_int));
+
+    for(u_int k = 0; k < n; k++){
+        result[k] = px[k].g;
+    }
+
+    return result;
+}
+
+u_int* Imagem::getB(){
+    u_int *result;
+
+    result = (u_int*) malloc(n*sizeof(u_int));
+
+    for(u_int k = 0; k < n; k++){
+        result[k] = px[k].b;
+    }
+
+    return result;
 }
 
 void Imagem::readPGM(FILE* arq, const char* filename){
@@ -348,7 +402,6 @@ void Imagem::normMahalanobis(u_int *vectorR, u_int *vectorG, u_int *vectorB, u_i
     mB = average(vectorB, tam);
 
 
-
     //Linha 1
     mCovariance[0] = covariance(vectorR, vectorR, tam, mR, mR);
     mCovariance[1] = covariance(vectorR, vectorG, tam, mR, mG);
@@ -379,10 +432,8 @@ void Imagem::normMahalanobis(u_int *vectorR, u_int *vectorG, u_int *vectorB, u_i
 
     index = 0;
     for(u_int k = 0; k < (width * height); k++){
-        dist = sqrt(abs((aux[index] * (px[k].r - mR)) + (aux[index + 1] * (px[k].g - mG)) + (aux[index + 2] * (px[k].b - mB))));
+        dist = sqrt((aux[index] * (px[k].r - mR)) + (aux[index + 1] * (px[k].g - mG)) + (aux[index + 2] * (px[k].b - mB)));
         //printf("%.4f\n", dist);
-        //printf("%.4f\n", (aux[index] * (px[k].r - mR)) + (aux[index + 1] * (px[k].g - mG)) + (aux[index + 2] * (px[k].b - mB)));
-
         index += 3;
         if(dist < (double)th){
             px[k].r = 0;
@@ -424,6 +475,7 @@ void Imagem::normKneighbors(u_int *vectorR, u_int *vectorG, u_int *vectorB, u_in
         for(u_int k = 0; k < (width*height); k++){
             de = ((px[k].r - mR)*(px[k].r - mR)) + ((px[k].g - mG)*(px[k].g - mG)) + ((px[k].b - mB)*(px[k].b - mB));
 
+
             if(sqrt(de) < (double)th){
                 //printf("%.2f  %.2f  %.2f\n", (px[k].r - mR), (px[k].g - mG), (px[k].b - mB));
                 //printf("%.4f\n", sqrt(de));
@@ -439,5 +491,99 @@ void Imagem::normKneighbors(u_int *vectorR, u_int *vectorG, u_int *vectorB, u_in
         }
     }
     setPPM(aux);
+}
+
+void Imagem::convolve(int kernel[], u_int s){
+    PIXEL *result;
+    u_int k = 0, sumR, sumG, sumB, cnt_l = 0, cnt_c = 0, cnt_k = 0, maxR = 0, maxG = 0, maxB = 0;
+    u_int *vectR, *vectG, *vectB;
+    int posX, posY;
+
+    result = (PIXEL*) malloc(n*sizeof(PIXEL));
+    vectR = (u_int*) malloc(n*sizeof(u_int));
+    vectG = (u_int*) malloc(n*sizeof(u_int));
+    vectB = (u_int*) malloc(n*sizeof(u_int));
+
+    for(u_int i_line = 0; i_line < width; i_line++){
+        for(u_int i_column = 0; i_column < height; i_column++){
+            k = i_line*height + i_column;
+
+            // Set 0 para variáveis auxiliares
+            cnt_l = 0; cnt_c = 0;
+            sumR = 0; sumG = 0; sumB = 0;
+            posX = 0; posY = 0;
+
+            while(1){
+                posX = (i_line - (s / 2) + cnt_l);
+                posY = (i_column - (s / 2) + cnt_c);
+
+                // trata as bordas superiores
+                if(posX < 0){
+                    if(posY < 0)
+                        cnt_k = (width + posX) * height + (height + posY);
+                    else if(posY >= height)
+                        cnt_k = (width + posX) * height + (height - posY);
+                    else
+                        cnt_k = (width + posX) * height + posY;
+                }
+                // trata as bordas inferiores
+                else if(posX >= width){
+                    if(posY < 0)
+                        cnt_k = (width - posX) * height + (height + posY);
+                    else if(posY >= height)
+                        cnt_k = (width - posX) * height + (height - posY);
+                    else
+                        cnt_k = (width - posX) * height + posY;
+                }
+                // trata as bordas laterais
+                else{
+                    if(posY < 0)
+                        cnt_k = posX * height + (height + posY);
+                    else if(posY >= height)
+                        cnt_k = posX * height + (height - posY);
+                    else
+                        cnt_k = posX * height + posY;
+                }
+                // printf("cnt_k = %d   \n", cnt_k);
+                // printf("cnt_l = %d   cnt_c = %d   ", cnt_l, cnt_c);
+                if(cnt_l == (s-1) && cnt_c == (s-1)){
+                    //printf("kernel i = %d   ", cnt_l*s + cnt_c);
+                    sumR += kernel[cnt_l*s + cnt_c]*px[cnt_k].r;
+                    sumG += kernel[cnt_l*s + cnt_c]*px[cnt_k].g;
+                    sumB += kernel[cnt_l*s + cnt_c]*px[cnt_k].b;
+                    break;
+                }
+                else{
+                    //printf("kernel i = %d   ", cnt_l*s + cnt_c);
+                    sumR += kernel[cnt_l*s + cnt_c]*px[cnt_k].r;
+                    sumG += kernel[cnt_l*s + cnt_c]*px[cnt_k].g;
+                    sumB += kernel[cnt_l*s + cnt_c]*px[cnt_k].b;
+                    cnt_c++;
+                }
+                if(cnt_c == s){
+                    cnt_l++;
+                    cnt_c = 0;
+                }
+                //printf("\n");
+            }
+            result[k].r = sumR; result[k].g = sumG; result[k].b = sumB;
+        }
+    }
+
+    // Normalizando os valores dos pixels entre 0 e 255
+    for(u_int k = 0; k < n; k++){
+        vectR[k] = result[k].r;
+        vectG[k] = result[k].g;
+        vectB[k] = result[k].b;
+    }
+    maxG = maxFind(vectG, n);
+    maxR = maxFind(vectR, n);
+    maxB = maxFind(vectB, n);
+    vectR = parameterize(vectR, n, maxR, 255);
+    vectG = parameterize(vectG, n, maxG, 255);
+    vectB = parameterize(vectB, n, maxB, 255);
+
+    setPPM(vectR, vectG, vectB);
+    //printf("\n");
 }
 

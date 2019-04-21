@@ -77,3 +77,26 @@ double *inverse(double matrix[]){
 
     return m_inverse;
 }
+
+
+u_int maxFind(u_int m[], u_int n){
+    u_int result = 0;
+
+    for(u_int k = 0; k < n; k++){
+        if(m[k] > result)
+            result = m[k];
+    }
+    return result;
+}
+
+
+u_int* parameterize(u_int m[], u_int n, u_int mx, u_int p_e){
+    u_int *result;
+    result = (u_int*) malloc(n*sizeof(u_int));
+
+    for(u_int k = 0; k < n; k++){
+        result[k] = (m[k] * p_e) / mx;
+    }
+
+    return result;
+}
