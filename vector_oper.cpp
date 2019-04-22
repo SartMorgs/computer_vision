@@ -25,6 +25,7 @@ double average(u_int *vec, u_int b, u_int e){
     }
 
     average = ((double)sum / (double)(e - b));
+
     return average;
 }
 
@@ -46,7 +47,6 @@ float variance(u_int vec[], u_int n, float average){
     for(u_int k = 0; k < n; k++){
         sum += (((float)vec[k] - average)*((float)vec[k] - average));
     }
-
     return sum / n;
 }
 
@@ -86,6 +86,18 @@ u_int maxFind(u_int m[], u_int n){
         if(m[k] > result)
             result = m[k];
     }
+    //printf("%d\n", result);
+    return result;
+}
+
+float maxFind(float m[], u_int n){
+    float result = 0;
+
+    for(u_int k = 0; k < n; k++){
+        if(m[k] > result)
+            result = m[k];
+    }
+    //printf("%d\n", result);
     return result;
 }
 
@@ -95,8 +107,20 @@ u_int* parameterize(u_int m[], u_int n, u_int mx, u_int p_e){
     result = (u_int*) malloc(n*sizeof(u_int));
 
     for(u_int k = 0; k < n; k++){
-        result[k] = (m[k] * p_e) / mx;
+        result[k] = (u_int)((p_e * m[k]) / mx);
     }
 
     return result;
 }
+
+float* parameterize(float m[], u_int n, float mx, u_int p_e){
+    float *result;
+    result = (float*) malloc(n*sizeof(float));
+
+    for(u_int k = 0; k < n; k++){
+        result[k] = (((float)p_e * m[k]) / mx);
+    }
+
+    return result;
+}
+
