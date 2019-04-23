@@ -62,9 +62,9 @@ class Imagem{
 		void normKneighbors(u_int *vectorR, u_int *vectorG, u_int *vectorB, u_int s, u_int numOrb, u_int th);
 
         // Funções de filtro
-        float* findWeightArray(u_int s);
+        double* findWeightArray(u_int s);
 		void convolve(int kernel[], u_int s, u_int w);          // Kernel com peso fixo (linear)
-		void convolve(int kernel[], u_int s, float w[]);        // Kernel com peso variável (não-linear)
+		void convolve(int kernel[], u_int s, double w[]);        // Kernel com peso variável (não-linear)
 };
 
 void Imagem::setWidth(u_int w){
@@ -465,13 +465,13 @@ void Imagem::normKneighbors(u_int *vectorR, u_int *vectorG, u_int *vectorB, u_in
     setPPM(aux);
 }
 
-float* Imagem::findWeightArray(u_int s){
-    u_int cnt_l, cnt_c, cnt_k, cont;
+double* Imagem::findWeightArray(u_int s){
+    u_int cnt_l, cnt_c, cnt_k, cont, k;
     u_int *sampleR, *sampleG, *sampleB;
     int posX, posY;
-    float vrR, vrG, vrB;
+    double vrR, vrG, vrB, mx;
     double avR, avG, avB;
-    float *w;
+    double *w;
     bool flag;
 
     printf("%d   %d\n", height, width);
@@ -480,12 +480,13 @@ float* Imagem::findWeightArray(u_int s){
     sampleG = (u_int*) malloc(s*s*sizeof(u_int));
     sampleB = (u_int*) malloc(s*s*sizeof(u_int));
 
-    w = (float*) malloc(n*3*sizeof(float));
+    w = (double*) malloc(n*3*sizeof(double));
 
     cont = 0;
 
     for(u_int i_line = 0; i_line < height; i_line++){
         for(u_int i_column = 0; i_column < width; i_column++){
+            k = i_line*width + i_column;
 
             // Set 0 para variáveis auxiliares
             cnt_l = 0; cnt_c = 0;
@@ -553,15 +554,18 @@ float* Imagem::findWeightArray(u_int s){
             // Variância dos pontos
             vrR = variance(sampleR, s*s, avR); vrG = variance(sampleG, s*s, avG); vrB = variance(sampleB, s*s, avB);
 
-            // Cálculo do vetor de pesos
-            w[cont] = exp(-(px[i_line*width + i_column].r*px[i_line*width + i_column].r / (2 * vrR))) / sqrt(2 * 3.1416 * vrR);
-            w[cont + 1] = exp(-(px[i_line*width + i_column].g*px[i_line*width + i_column].g / (2 * vrG))) / sqrt(2 * 3.1416 * vrG);
-            w[cont + 2] = exp(-(px[i_line*width + i_column].b*px[i_line*width + i_column].b / (2 * vrB))) / sqrt(2 * 3.1416 * vrB);
-            //printf("%.6f   %.6f   %.6f\n", w[cont], w[cont+1], w[cont+2]);
+            // Cálculo dos pesos
+            w[cont] = vrR;
+            w[cont+1] = vrG;
+            w[cont+2] = vrB;
             cont += 3;
 
         }
     }
+
+    mx = maxFind(w, n*3);
+    w = parameterize(w, n*3, mx, 1, 7);
+    invertValue(w, n*3, 7);
 
     return w;
 }
@@ -666,17 +670,17 @@ void Imagem::convolve(int kernel[], u_int s, u_int w){
     //printf("\n");
 }
 
-void Imagem::convolve(int kernel[], u_int s, float w[]){
+void Imagem::convolve(int kernel[], u_int s, double w[]){
     PIXEL *result;
     u_int k = 0, cnt_l = 0, cnt_c = 0, cnt_k = 0, maxR = 0, maxG = 0, maxB = 0, cont = 0;
-    float *vectR, *vectG, *vectB;
+    double *vectR, *vectG, *vectB;
     int posX, posY;
     float sumR, sumG, sumB;
 
     result = (PIXEL*) malloc(n*sizeof(PIXEL));
-    vectR = (float*) malloc(n*sizeof(float));
-    vectG = (float*) malloc(n*sizeof(float));
-    vectB = (float*) malloc(n*sizeof(float));
+    vectR = (double*) malloc(n*sizeof(double));
+    vectG = (double*) malloc(n*sizeof(double));
+    vectB = (double*) malloc(n*sizeof(double));
 
 
     for(u_int i_line = 0; i_line < height; i_line++){
@@ -723,16 +727,16 @@ void Imagem::convolve(int kernel[], u_int s, float w[]){
                 // printf("cnt_l = %d   cnt_c = %d   ", cnt_l, cnt_c);
                 if(cnt_l == (s-1) && cnt_c == (s-1)){
                     //printf("kernel i = %d   ", cnt_l*s + cnt_c);
-                    sumR += (float)w[cont]*kernel[cnt_l*s + cnt_c]*px[cnt_k].r;
-                    sumG += (float)w[cont+1]*kernel[cnt_l*s + cnt_c]*px[cnt_k].g;
-                    sumB += (float)w[cont+2]*kernel[cnt_l*s + cnt_c]*px[cnt_k].b;
+                    sumR += kernel[cnt_l*s + cnt_c]*px[cnt_k].r;
+                    sumG += kernel[cnt_l*s + cnt_c]*px[cnt_k].g;
+                    sumB += kernel[cnt_l*s + cnt_c]*px[cnt_k].b;
                     break;
                 }
                 else{
                     //printf("kernel i = %d   ", cnt_l*s + cnt_c);
-                    sumR += (float)w[cont]*kernel[cnt_l*s + cnt_c]*px[cnt_k].r;
-                    sumG += (float)w[cont+1]*kernel[cnt_l*s + cnt_c]*px[cnt_k].g;
-                    sumB += (float)w[cont+2]*kernel[cnt_l*s + cnt_c]*px[cnt_k].b;
+                    sumR += kernel[cnt_l*s + cnt_c]*px[cnt_k].r;
+                    sumG += kernel[cnt_l*s + cnt_c]*px[cnt_k].g;
+                    sumB += kernel[cnt_l*s + cnt_c]*px[cnt_k].b;
                     cnt_c++;
                 }
                 if(cnt_c == s){
@@ -741,9 +745,9 @@ void Imagem::convolve(int kernel[], u_int s, float w[]){
                 }
                 //printf("\n");
             }
-            cont += 3;
             //result[k].r = (u_int) sumR; result[k].g = (u_int) sumG; result[k].b = (u_int) sumB;
-            vectR[k] = sumR; vectG[k] = sumG; vectB[k] = sumB;
+            vectR[k] = w[cont]*sumR; vectG[k] = w[cont+1] * sumG; vectB[k] = w[cont+2] * sumB;
+            cont += 3;
         }
     }
 
@@ -763,6 +767,7 @@ void Imagem::convolve(int kernel[], u_int s, float w[]){
         result[k].r = (u_int) vectR[k];
         result[k].g = (u_int) vectG[k];
         result[k].b = (u_int) vectB[k];
+        //printf("%.6f   %.6f   %.6f\n", vectR[k], vectG[k], vectB[k]);
     }
 
 

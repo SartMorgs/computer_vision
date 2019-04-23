@@ -41,13 +41,27 @@ double covariance(u_int vectorX[], u_int vectorY[], u_int n, double averageX, do
     return covariance;
 }
 
-float variance(u_int vec[], u_int n, float average){
-    float sum = 0.0;
+double variance(u_int vec[], u_int n, double average){
+    double sum = 0.0, result;
 
     for(u_int k = 0; k < n; k++){
-        sum += (((float)vec[k] - average)*((float)vec[k] - average));
+        sum += ((((double)vec[k]) - average)*(((double)vec[k]) - average));
     }
-    return sum / n;
+    result = sum / n;
+
+    return result;
+}
+
+double stddv(u_int vec[], u_int n, double average){
+    double sum = 0.0, result;
+
+    for(u_int k = 0; k < n; k++){
+        sum += (((double)vec[k]) - average);
+    }
+    result = sum / n;
+
+    return result;
+
 }
 
 double *inverse(double matrix[]){
@@ -90,8 +104,8 @@ u_int maxFind(u_int m[], u_int n){
     return result;
 }
 
-float maxFind(float m[], u_int n){
-    float result = 0;
+double maxFind(double m[], u_int n){
+    double result = 0;
 
     for(u_int k = 0; k < n; k++){
         if(m[k] > result)
@@ -113,14 +127,33 @@ u_int* parameterize(u_int m[], u_int n, u_int mx, u_int p_e){
     return result;
 }
 
-float* parameterize(float m[], u_int n, float mx, u_int p_e){
-    float *result;
-    result = (float*) malloc(n*sizeof(float));
+double* parameterize(double m[], u_int n, double mx, u_int p_e){
+    double *result;
+    result = (double*) malloc(n*sizeof(double));
 
     for(u_int k = 0; k < n; k++){
-        result[k] = (((float)p_e * m[k]) / mx);
+        result[k] = (((double)p_e * m[k]) / mx);
+        //printf("%.6f\n", result[k]);
     }
 
     return result;
+}
+
+double* parameterize(double m[], u_int n, double mx, u_int p_b, u_int p_e){
+    double *result;
+    result = (double*) malloc(n*sizeof(double));
+
+    for(u_int k = 0; k < n; k++){
+        result[k] = (((double)p_e * (m[k] - (double) p_b)) / (mx - p_b));
+        //printf("%.6f\n", result[k]);
+    }
+
+    return result;
+}
+
+void invertValue(double m[], u_int n, double mx){
+    for(u_int k = 0; k < n; k++){
+        m[k] = mx - m[k];
+    }
 }
 
