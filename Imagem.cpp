@@ -1,7 +1,6 @@
 #include <iostream>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 #include "vector_oper.cpp"
 
 using namespace std;
@@ -397,15 +396,10 @@ void Imagem::normMahalanobis(u_int *vectorR, u_int *vectorG, u_int *vectorB, u_i
 
     }
 
-    /*for(u_int k = 0; k < (width*height*3); k++){
-        printf("%.7f ", aux[k]);
-    }
-    */
 
     index = 0;
     for(u_int k = 0; k < (width * height); k++){
         dist = sqrt((aux[index] * (px[k].r - mR)) + (aux[index + 1] * (px[k].g - mG)) + (aux[index + 2] * (px[k].b - mB)));
-        //printf("%.4f\n", dist);
         index += 3;
         if(dist < (double)th){
             px[k].r = 0;
@@ -442,15 +436,11 @@ void Imagem::normKneighbors(u_int *vectorR, u_int *vectorG, u_int *vectorB, u_in
         mG = average(vectorG, (i*sizeSeg - sizeSeg), (i*sizeSeg));
         mB = average(vectorB, (i*sizeSeg - sizeSeg), (i*sizeSeg));
 
-        //printf("%.4f  %.4f  %.4f \n", mR, mG, mB);
-
         for(u_int k = 0; k < (width*height); k++){
             de = ((px[k].r - mR)*(px[k].r - mR)) + ((px[k].g - mG)*(px[k].g - mG)) + ((px[k].b - mB)*(px[k].b - mB));
 
 
             if(sqrt(de) < (double)th){
-                //printf("%.2f  %.2f  %.2f\n", (px[k].r - mR), (px[k].g - mG), (px[k].b - mB));
-                //printf("%.4f\n", sqrt(de));
                 aux[k].r = 0;
                 aux[k].g = 0;
                 aux[k].b = 0;
@@ -471,10 +461,8 @@ double* Imagem::findWeightArray(u_int s){
     int posX, posY;
     double vrR, vrG, vrB, mx;
     double avR, avG, avB;
-    double *w;
+    double *w, *aux;
     bool flag;
-
-    printf("%d   %d\n", height, width);
 
     sampleR = (u_int*) malloc(s*s*sizeof(u_int));
     sampleG = (u_int*) malloc(s*s*sizeof(u_int));
@@ -494,59 +482,55 @@ double* Imagem::findWeightArray(u_int s){
             flag = false;
 
             while(flag != true){
-                posX = (i_line - (s / 2) + cnt_l);
-                posY = (i_column - (s / 2) + cnt_c);
+                posY = (i_line - (s / 2) + cnt_l);
+                posX = (i_column - (s / 2) + cnt_c);
 
                 // trata as bordas superiores
-                if(posX < 0){
-                    if(posY < 0)
-                        cnt_k = (height + posX) * width + (width + posY);
-                    else if(posY >= width)
-                        cnt_k = (height + posX) * width + (width - posY);
+
+                if(posY < 0){
+                    if(posX < 0)
+                        cnt_k = (height + posY) * width + (width + posX);
+                    else if(posX >= width)
+                        cnt_k = (height + posY) * width + (posX - width);
                     else
-                        cnt_k = (height + posX) * width + posY;
+                        cnt_k = (height + posY) * width + posX;
                 }
                 // trata as bordas inferiores
-                else if(posX >= height){
-                    if(posY < 0)
-                        cnt_k = (height - posX) * width + (width + posY);
-                    else if(posY >= width)
-                        cnt_k = (height - posX) * width + (width - posY);
-                    else
-                        cnt_k = (height - posX) * width + posY;
+                else if(posY >= height){
+                    if(posX < 0)
+                        cnt_k = (posY - height) * width + (width + posX);
+                    else if(posX >= width)
+                        cnt_k = (posY - height) * width + (posX - width);
+                    else{
+                        cnt_k = (posY - height) * width + posX;
+                    }
                 }
                 // trata as bordas laterais
                 else{
-                    if(posY < 0)
-                        cnt_k = posX * width + (width + posY);
-                    else if(posY >= width)
-                        cnt_k = posX * width + (width - posY);
+                    if(posX < 0)
+                        cnt_k = posY * width + (width + posX);
+                    else if(posX >= width){
+                        cnt_k = posY * width + (posX - width);
+                    }
                     else
-                        cnt_k = posX * width + posY;
+                        cnt_k = posY * width + posX;
                 }
-                //printf("cnt_k = %d   ", cnt_k);
-                //printf("cnt_l = %d   cnt_c = %d   ", cnt_l, cnt_c);
                 if(cnt_l == (s-1) && cnt_c == (s-1)){
-                    //printf("kernel i = %d   \n", cnt_l*s + cnt_c);
                     sampleR[cnt_l*s + cnt_c] = px[cnt_k].r;
                     sampleG[cnt_l*s + cnt_c] = px[cnt_k].g;
                     sampleB[cnt_l*s + cnt_c] = px[cnt_k].b;
-                    //printf("sumR = kernel[%d] x px[%d] = %d\n", cnt_l*s + cnt_c, cnt_k, sumR);
                     flag = true;
                 }
                 else{
-                    //printf("kernel i = %d   \n", cnt_l*s + cnt_c);
                     sampleR[cnt_l*s + cnt_c] = px[cnt_k].r;
                     sampleG[cnt_l*s + cnt_c] = px[cnt_k].g;
                     sampleB[cnt_l*s + cnt_c] = px[cnt_k].b;
-                    //printf("sumR = kernel[%d] x px[%d] = %d\n", cnt_l*s + cnt_c, cnt_k, sumR);
                     cnt_c++;
                 }
                 if(cnt_c == s){
                     cnt_l++;
                     cnt_c = 0;
                 }
-                //printf("\n");
             }
 
             // Média dos pontos
@@ -556,16 +540,22 @@ double* Imagem::findWeightArray(u_int s){
 
             // Cálculo dos pesos
             w[cont] = vrR;
-            w[cont+1] = vrG;
-            w[cont+2] = vrB;
-            cont += 3;
-
+            w[cont+n] = vrG;
+            w[cont+(2*n)] = vrB;
+            cont += 1;
         }
     }
 
-    mx = maxFind(w, n*3);
-    w = parameterize(w, n*3, mx, 1, 7);
-    invertValue(w, n*3, 7);
+    mx = maxFind(w, 0, n);
+    parameterize(w, 0, n, mx, 1, 7);
+
+    mx = maxFind(w, n, 2*n);
+    parameterize(w, n, 2*n, mx, 1, 7);
+
+    mx = maxFind(w, 2*n, 3*n);
+    parameterize(w, 2*n, 3*n, mx, 1, 7);
+
+    invertValue(w, 3*n, 8);
 
     return w;
 }
@@ -576,8 +566,6 @@ void Imagem::convolve(int kernel[], u_int s, u_int w){
     u_int *vectR, *vectG, *vectB;
     int posX, posY;
     bool flag;
-
-    //printf("w = %d   h = %d\n", width, height);
 
     result = (PIXEL*) malloc(n*sizeof(PIXEL));
     vectR = (u_int*) malloc(n*sizeof(u_int));
@@ -595,79 +583,75 @@ void Imagem::convolve(int kernel[], u_int s, u_int w){
             flag = false;
 
             while(flag != true){
-                posX = (i_line - (s / 2) + cnt_l);
-                posY = (i_column - (s / 2) + cnt_c);
+                posY = (i_line - (s / 2) + cnt_l);
+                posX = (i_column - (s / 2) + cnt_c);
 
                 // trata as bordas superiores
-                if(posX < 0){
-                    if(posY < 0)
-                        cnt_k = (height + posX) * width + (width + posY);
-                    else if(posY >= width)
-                        cnt_k = (height + posX) * width + (width - posY);
+                if(posY < 0){
+                    if(posX < 0)
+                        cnt_k = (height + posY) * width + (width + posX);
+                    else if(posX >= width)
+                        cnt_k = (height + posY) * width + (posX - width);
                     else
-                        cnt_k = (height + posX) * width + posY;
+                        cnt_k = (height + posY) * width + posX;
                 }
                 // trata as bordas inferiores
-                else if(posX >= height){
-                    if(posY < 0)
-                        cnt_k = (height - posX) * width + (width + posY);
-                    else if(posY >= width)
-                        cnt_k = (height - posX) * width + (width - posY);
-                    else
-                        cnt_k = (height - posX) * width + posY;
+                else if(posY >= height){
+                    if(posX < 0)
+                        cnt_k = (posY - height) * width + (width + posX);
+                    else if(posX >= width)
+                        cnt_k = (posY - height) * width + (posX - width);
+                    else{
+                        cnt_k = (posY - height) * width + posX;
+                    }
                 }
                 // trata as bordas laterais
                 else{
-                    if(posY < 0)
-                        cnt_k = posX * width + (width + posY);
-                    else if(posY >= width)
-                        cnt_k = posX * width + (width - posY);
+                    if(posX < 0)
+                        cnt_k = posY * width + (width + posX);
+                    else if(posX >= width){
+                        cnt_k = posY * width + (posX - width);
+                    }
                     else
-                        cnt_k = posX * width + posY;
+                        cnt_k = posY * width + posX;
                 }
-                //printf("cnt_k = %d   ", cnt_k);
-                //printf("cnt_l = %d   cnt_c = %d   ", cnt_l, cnt_c);
                 if(cnt_l == (s-1) && cnt_c == (s-1)){
-                    //printf("kernel i = %d   \n", cnt_l*s + cnt_c);
                     sumR += kernel[cnt_l*s + cnt_c]*px[cnt_k].r;
                     sumG += kernel[cnt_l*s + cnt_c]*px[cnt_k].g;
                     sumB += kernel[cnt_l*s + cnt_c]*px[cnt_k].b;
-                    //printf("sumR = kernel[%d] x px[%d] = %d\n", cnt_l*s + cnt_c, cnt_k, sumR);
                     flag = true;
                 }
                 else{
-                    //printf("kernel i = %d   \n", cnt_l*s + cnt_c);
                     sumR += kernel[cnt_l*s + cnt_c]*px[cnt_k].r;
                     sumG += kernel[cnt_l*s + cnt_c]*px[cnt_k].g;
                     sumB += kernel[cnt_l*s + cnt_c]*px[cnt_k].b;
-                    //printf("sumR = kernel[%d] x px[%d] = %d\n", cnt_l*s + cnt_c, cnt_k, sumR);
                     cnt_c++;
                 }
                 if(cnt_c == s){
                     cnt_l++;
                     cnt_c = 0;
                 }
-                //printf("\n");
             }
             result[k].r = w*sumR; result[k].g = w*sumG; result[k].b = w*sumB;
         }
     }
 
+
+
     // Normalizando os valores dos pixels entre 0 e 255
-    for(u_int k = 0; k < n; k++){
-        vectR[k] = result[k].r;
-        vectG[k] = result[k].g;
-        vectB[k] = result[k].b;
+    for(u_int j = 0; j < n; j++){
+        vectR[j] = result[j].r;
+        vectG[j] = result[j].g;
+        vectB[j] = result[j].b;
     }
     maxR = maxFind(vectR, n);
     maxG = maxFind(vectG, n);
     maxB = maxFind(vectB, n);
-    vectR = parameterize(vectR, n, maxR, 255);
-    vectG = parameterize(vectG, n, maxG, 255);
-    vectB = parameterize(vectB, n, maxB, 255);
+    parameterize(vectR, n, maxR, 255);
+    parameterize(vectG, n, maxG, 255);
+    parameterize(vectB, n, maxB, 255);
 
     setPPM(vectR, vectG, vectB);
-    //printf("\n");
 }
 
 void Imagem::convolve(int kernel[], u_int s, double w[]){
@@ -682,7 +666,6 @@ void Imagem::convolve(int kernel[], u_int s, double w[]){
     vectG = (double*) malloc(n*sizeof(double));
     vectB = (double*) malloc(n*sizeof(double));
 
-
     for(u_int i_line = 0; i_line < height; i_line++){
         for(u_int i_column = 0; i_column < width; i_column++){
             k = i_line*width + i_column;
@@ -693,86 +676,74 @@ void Imagem::convolve(int kernel[], u_int s, double w[]){
             posX = 0; posY = 0;
 
             while(1){
-                posX = (i_line - (s / 2) + cnt_l);
-                posY = (i_column - (s / 2) + cnt_c);
+                posY = (i_line - (s / 2) + cnt_l);
+                posX = (i_column - (s / 2) + cnt_c);
 
                 // trata as bordas superiores
-                if(posX < 0){
-                    if(posY < 0)
-                        cnt_k = (height + posX) * width + (width + posY);
-                    else if(posY >= width)
-                        cnt_k = (height + posX) * width + (width - posY);
+                if(posY < 0){
+                    if(posX < 0)
+                        cnt_k = (height + posY) * width + (width + posX);
+                    else if(posX >= width)
+                        cnt_k = (height + posY) * width + (posX - width);
                     else
-                        cnt_k = (height + posX) * width + posY;
+                        cnt_k = (height + posY) * width + posX;
                 }
                 // trata as bordas inferiores
-                else if(posX >= height){
-                    if(posY < 0)
-                        cnt_k = (height - posX) * width + (width + posY);
-                    else if(posY >= width)
-                        cnt_k = (height - posX) * width + (width - posY);
-                    else
-                        cnt_k = (height - posX) * width + posY;
+                else if(posY >= height){
+                    if(posX < 0)
+                        cnt_k = (posY - height) * width + (width + posX);
+                    else if(posX >= width)
+                        cnt_k = (posY - height) * width + (posX - width);
+                    else{
+                        cnt_k = (posY - height) * width + posX;
+                    }
                 }
                 // trata as bordas laterais
                 else{
-                    if(posY < 0)
-                        cnt_k = posX * width + (width + posY);
-                    else if(posY >= width)
-                        cnt_k = posX * width + (width - posY);
+                    if(posX < 0)
+                        cnt_k = posY * width + (width + posX);
+                    else if(posX >= width){
+                        cnt_k = posY * width + (posX - width);
+                    }
                     else
-                        cnt_k = posX * width + posY;
+                        cnt_k = posY * width + posX;
                 }
-                // printf("cnt_k = %d   \n", cnt_k);
-                // printf("cnt_l = %d   cnt_c = %d   ", cnt_l, cnt_c);
                 if(cnt_l == (s-1) && cnt_c == (s-1)){
-                    //printf("kernel i = %d   ", cnt_l*s + cnt_c);
                     sumR += kernel[cnt_l*s + cnt_c]*px[cnt_k].r;
                     sumG += kernel[cnt_l*s + cnt_c]*px[cnt_k].g;
                     sumB += kernel[cnt_l*s + cnt_c]*px[cnt_k].b;
                     break;
                 }
                 else{
-                    //printf("kernel i = %d   ", cnt_l*s + cnt_c);
                     sumR += kernel[cnt_l*s + cnt_c]*px[cnt_k].r;
                     sumG += kernel[cnt_l*s + cnt_c]*px[cnt_k].g;
                     sumB += kernel[cnt_l*s + cnt_c]*px[cnt_k].b;
                     cnt_c++;
                 }
+
                 if(cnt_c == s){
                     cnt_l++;
                     cnt_c = 0;
                 }
-                //printf("\n");
             }
-            //result[k].r = (u_int) sumR; result[k].g = (u_int) sumG; result[k].b = (u_int) sumB;
-            vectR[k] = w[cont]*sumR; vectG[k] = w[cont+1] * sumG; vectB[k] = w[cont+2] * sumB;
-            cont += 3;
+            vectR[k] = w[cont]*sumR; vectG[k] = w[cont+n] * sumG; vectB[k] = w[cont+(2*n)] * sumB;
+            cont += 1;
         }
     }
 
-    // Normalizando os valores dos pixels entre 0 e 255
-    /*for(u_int k = 0; k < n; k++){
-        vectR[k] = result[k].r;
-        vectG[k] = result[k].g;
-        vectB[k] = result[k].b;
-    }*/
-    maxG = maxFind(vectG, n);
-    maxR = maxFind(vectR, n);
-    maxB = maxFind(vectB, n);
-    vectR = parameterize(vectR, n, maxR, 255);
-    vectG = parameterize(vectG, n, maxG, 255);
-    vectB = parameterize(vectB, n, maxB, 255);
+    maxG = maxFind(vectG, 0, n);
+    maxR = maxFind(vectR, 0, n);
+    maxB = maxFind(vectB, 0, n);
+
+    parameterize(vectR, 0, n, maxR, 255);
+    parameterize(vectG, 0, n, maxG, 255);
+    parameterize(vectB, 0, n, maxB, 255);
+
     for(u_int k = 0; k < n; k++){
         result[k].r = (u_int) vectR[k];
         result[k].g = (u_int) vectG[k];
         result[k].b = (u_int) vectB[k];
-        //printf("%.6f   %.6f   %.6f\n", vectR[k], vectG[k], vectB[k]);
     }
-
-
     setPPM(result);
-    //printf("\n");
+
 }
-
-

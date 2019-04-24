@@ -13,14 +13,14 @@ int main(){
 	PIXEL *p, *q;
 	double *w;
 
-	int kernel[9] = {   1, 2, 1,
-                        2, 4, 2,
-                        1, 2, 1};
+	int kernel[9] = {   1, 1, 1,
+                        1, 1, 1,
+                        1, 1, 1};
 
 	// LEITURA ARQUIVOS PGM E PPM
 	p = NULL;
 	//img.readPGM(pgm_file, "road.pgm");
-	img.readPPM(ppm_file, "Color.ppm");
+	img.readPPM(ppm_file, "Amostras/almofada.ppm");
     p = img.getImg();
 
     w = img.findWeightArray(3);
@@ -29,7 +29,7 @@ int main(){
 
     // ESCRITA ARQUIVOS PGM E PPM
     //img.writePGM(pg, "asfalto.pgm");
-    img.writePPM(pp, "teste_nl.ppm");
+    img.writePPM(pp, "Resultados/almofada1_k3_nl.ppm");
 
 	return 0;
 }

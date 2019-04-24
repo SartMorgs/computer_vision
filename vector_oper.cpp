@@ -52,18 +52,6 @@ double variance(u_int vec[], u_int n, double average){
     return result;
 }
 
-double stddv(u_int vec[], u_int n, double average){
-    double sum = 0.0, result;
-
-    for(u_int k = 0; k < n; k++){
-        sum += (((double)vec[k]) - average);
-    }
-    result = sum / n;
-
-    return result;
-
-}
-
 double *inverse(double matrix[]){
     double det;
     double *m_inverse;
@@ -100,55 +88,73 @@ u_int maxFind(u_int m[], u_int n){
         if(m[k] > result)
             result = m[k];
     }
-    //printf("%d\n", result);
     return result;
 }
 
-double maxFind(double m[], u_int n){
+int maxFind(int m[], u_int n){
+    int result = 0;
+
+    for(u_int k = 0; k < n; k++){
+        if(m[k] > result)
+            result = m[k];
+    }
+    return result;
+}
+
+double maxFind(double m[], u_int b, u_int n){
     double result = 0;
 
     for(u_int k = 0; k < n; k++){
         if(m[k] > result)
             result = m[k];
     }
-    //printf("%d\n", result);
     return result;
 }
 
 
-u_int* parameterize(u_int m[], u_int n, u_int mx, u_int p_e){
-    u_int *result;
-    result = (u_int*) malloc(n*sizeof(u_int));
+void parameterize(u_int m[], u_int n, u_int mx, u_int p_e){
 
     for(u_int k = 0; k < n; k++){
-        result[k] = (u_int)((p_e * m[k]) / mx);
+        m[k] = (u_int)((p_e * m[k]) / mx);
     }
 
-    return result;
 }
 
-double* parameterize(double m[], u_int n, double mx, u_int p_e){
-    double *result;
-    result = (double*) malloc(n*sizeof(double));
+void parameterize(int m[], u_int n, int mx, u_int p_e){
 
     for(u_int k = 0; k < n; k++){
-        result[k] = (((double)p_e * m[k]) / mx);
-        //printf("%.6f\n", result[k]);
+        m[k] = (int)((p_e * m[k]) / mx);
     }
 
-    return result;
 }
 
-double* parameterize(double m[], u_int n, double mx, u_int p_b, u_int p_e){
-    double *result;
-    result = (double*) malloc(n*sizeof(double));
+void parameterize(double m[], u_int b, u_int n, double mx, u_int p_e){
+
+    for(u_int k = b; k < n; k++){
+        m[k] = (((double)p_e * m[k]) / mx);
+    }
+}
+
+void parameterize(u_int m[], u_int n, u_int mx, u_int p_b, u_int p_e){
 
     for(u_int k = 0; k < n; k++){
-        result[k] = (((double)p_e * (m[k] - (double) p_b)) / (mx - p_b));
-        //printf("%.6f\n", result[k]);
+        m[k] = (u_int) ((p_e * (m[k] -  p_b)) / (mx - p_b));
     }
 
-    return result;
+}
+
+void parameterize(double m[], u_int b, u_int n, double mx, u_int p_b, u_int p_e){
+
+    for(u_int k = b; k < n; k++){
+        m[k] = (((double)p_e * (m[k] - (double) p_b)) / (mx - p_b));
+    }
+
+}
+
+void invertValue(u_int m[], u_int n, u_int mx){
+    for(u_int k = 0; k < n; k++){
+        m[k] = mx - m[k];
+    }
 }
 
 void invertValue(double m[], u_int n, double mx){
@@ -156,4 +162,3 @@ void invertValue(double m[], u_int n, double mx){
         m[k] = mx - m[k];
     }
 }
-
