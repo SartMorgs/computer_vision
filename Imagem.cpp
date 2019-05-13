@@ -1103,3 +1103,154 @@ void Imagem::edgeRobinson(u_int th){
 
     free(vectGray);
 }
+
+bool Imagem::findWay(u_int i_line, u_int i_column, u_int direction, u_int refR, u_int refG, u_int refB, u_int th){
+    int l2;
+    u_int k = 0;
+    switch(direction){
+        case 0: // Cima
+            if(i_line == 0) return false;          // Não há como ir nessa direção
+            else{
+                k = (i_line - 1) * width + i_column;
+                l2 = sqrt(((px[k].r - refR)*(px[k].r - refR)) + ((px[k].g - refG)*(px[k].g - refG)) + ((px[k].b - refB)*(px[k].b - refB)));
+                if(px[k].i == 0) return false;              // Há uma borda no pixel, portanto não forma região
+                else if(gr[k].region != 0) return false;    // Já há uma região formada
+                else if(l2 < th) return true;               // O pixel está na região
+                else return false;                          // Não pertence a região
+            }
+            break;
+        case 1: // Direita
+            if((i_column + 1) >= width) return false;   // Não há como ir nessa direção
+            else{
+                k = i_line * width + i_column + 1;
+                l2 = sqrt(((px[k].r - refR)*(px[k].r - refR)) + ((px[k].g - refG)*(px[k].g - refG)) + ((px[k].b - refB)*(px[k].b - refB)));
+                if(px[k].i == 0) return false;         // Há uma borda no pixel, portanto não forma região
+                else if(gr[k].region != 0) return false;    // Já há uma região formada
+                else if(l2 < th) return true;               // O pixel está na região
+                else return false;                          // Não pertence a região
+            }
+            break;
+        case 2: // Baixo
+            if((i_line + 1) >= height) return false;    // Não há como ir nessa direção
+            else{
+                k = (i_line + 1) * width + i_column;
+                l2 = sqrt(((px[k].r - refR)*(px[k].r - refR)) + ((px[k].g - refG)*(px[k].g - refG)) + ((px[k].b - refB)*(px[k].b - refB)));
+                if(px[k].i == 0) return false;         // Há uma borda no pixel, portanto não forma região
+                else if(gr[k].region != 0) return false;    // Já há uma região formada
+                else if(l2 < th) return true;               // O pixel está na região
+                else return false;                          // Não pertence a região
+            }
+            break;
+        case 3: // Esquerda
+            if(i_column == 0) return false;        // Não há como ir nessa direção
+            else{
+                k = i_line * width + i_column - 1;
+                l2 = sqrt(((px[k].r - refR)*(px[k].r - refR)) + ((px[k].g - refG)*(px[k].g - refG)) + ((px[k].b - refB)*(px[k].b - refB)));
+                if(px[k].i == 0) return false;         // Há uma borda no pixel, portanto não forma região
+                else if(gr[k].region != 0) return false;    // Já há uma região formada
+                else if(l2 < th) return true;               // O pixel está na região
+                else return false;                          // Não pertence a região
+            }
+            break;
+        default:
+            return false;
+            break;
+    }
+}
+
+void Imagem::floodFill(u_int th){
+    u_int k, i_l, i_c, refR, refG, refB, count_gr = 0;
+    bool result = false;
+
+    // Criação e inicialização da imagem no domínio de regiões
+    gr = (GROUP*) malloc(n*sizeof(GROUP));
+    for(u_int k = 0; k < n; k++){
+        gr[k].region = 0;
+    }
+
+    for(u_int i_line = 0; i_line < height; i_line++){
+        for(u_int i_column = 0; i_column < width; i_column++){
+            k = i_line * width + i_column;
+
+            if(gr[k].region == 0 && px[k].i != 0){
+                i_l = i_line; i_c = i_column;
+                refR = px[k].r; refG = px[k].g; refB = px[k].b;
+
+                //printf("AQUI 1\n");
+                // Tenta ir pra cima
+                while(1){
+                    result = findWay(i_l, i_c, 0, refR, refG, refB, th);
+                    if(result == false) break;
+                    else{
+                        gr[i_l * width + i_c].region = count_gr;
+                        gr[i_l * width + i_c].r = refR;
+                        gr[i_l * width + i_c].g = refG;
+                        gr[i_l * width + i_c].b = refB;
+                        i_l--;
+                    }
+                }
+
+                //printf("AQUI 2\n");
+                // Tenta ir pra cima
+                while(1){
+                    result = findWay(i_l, i_c, 1, refR, refG, refB, th);
+                    if(result == false) break;
+                    else{
+                        gr[i_l * width + i_c].region = count_gr;
+                        gr[i_l * width + i_c].r = refR;
+                        gr[i_l * width + i_c].g = refG;
+                        gr[i_l * width + i_c].b = refB;
+                        i_c++;
+                    }
+                }
+
+                //printf("AQUI 3\n");
+                // Tenta ir para baixo
+                while(1){
+                    result = findWay(i_l, i_c, 2, refR, refG, refB, th);
+                    if(result == false) break;
+                    else{
+                        gr[i_l * width + i_c].region = count_gr;
+                        gr[i_l * width + i_c].r = refR;
+                        gr[i_l * width + i_c].g = refG;
+                        gr[i_l * width + i_c].b = refB;
+                        i_l++;
+                    }
+                }
+
+                //printf("AQUI 4\n");
+                // Tenta ir pra esquerda
+                while(1){
+                    result = findWay(i_l, i_c, 3, refR, refG, refB, th);
+                    if(result == false) break;
+                    else{
+                        gr[i_l * width + i_c].region = count_gr;
+                        gr[i_l * width + i_c].r = refR;
+                        gr[i_l * width + i_c].g = refG;
+                        gr[i_l * width + i_c].b = refB;
+                        i_c--;
+                    }
+                }
+
+                //printf("AQUI 5\n");
+                // Incrementa região
+                count_gr++;
+            }
+        }
+    }
+
+
+    for(u_int k = 0; k < n; k++){
+        if(px[k].i == 0){
+            px[k].r = 0;
+            px[k].g = 0;
+            px[k].b = 0;
+        }
+        else{
+            px[k].r = gr[k].r;
+            px[k].g = gr[k].g;
+            px[k].b = gr[k].b;
+        }
+    }
+}
+
