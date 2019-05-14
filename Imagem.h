@@ -1,6 +1,8 @@
 #include <iostream>
 #include <stdlib.h>
 #include <string.h>
+#include <vector>
+#include "vector_oper.cpp"
 
 using namespace std;
 
@@ -75,5 +77,6 @@ class Imagem{
 
 		// Funções de segmentação
 		bool findWay(u_int i_line, u_int i_column, u_int direction, u_int refR, u_int refG, u_int refB, u_int th);
-		void floodFill(u_int th);
+		void staticFloodFill(u_int th);
+		void dynamicFloodFill(u_int th);
 };
