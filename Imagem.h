@@ -1,6 +1,8 @@
 #include <iostream>
 #include <stdlib.h>
 #include <string.h>
+#include <vector>
+#include "vector_oper.cpp"
 
 using namespace std;
 
@@ -9,10 +11,14 @@ typedef unsigned char u_char;
 typedef struct pixel{
 	u_int r, g, b, i;
 }PIXEL;
+typedef struct groups{
+    u_int region, r, g, b;
+}GROUP;
 
 class Imagem{
 	private:
 		u_int width, height, n;
+		GROUP *gr;
 		char type[2];
 		PIXEL *px;
 	public:
@@ -68,4 +74,9 @@ class Imagem{
 		void edgeRoberts(u_int th);
 		void edgeSobel(u_int th);
 		void edgeRobinson(u_int th);
+
+		// Funções de segmentação
+		bool findWay(u_int i_line, u_int i_column, u_int direction, u_int refR, u_int refG, u_int refB, u_int th);
+		void staticFloodFill(u_int th);
+		void dynamicFloodFill(u_int th);
 };
