@@ -4,6 +4,7 @@
 
 typedef unsigned int u_int;
 
+// ----------------------------- MÉDIA ---------------------------------------
 double average(u_int *vec, u_int n){
     int sum = 0;
     double average;
@@ -25,9 +26,11 @@ double average(u_int *vec, u_int b, u_int e){
     }
 
     average = ((double)sum / (double)(e - b));
+
     return average;
 }
 
+// --------------------------- COVARIÂNCIA ------------------------------------
 double covariance(u_int vectorX[], u_int vectorY[], u_int n, double averageX, double averageY){
     double covariance, sumCovariance = 0;
 
@@ -40,16 +43,19 @@ double covariance(u_int vectorX[], u_int vectorY[], u_int n, double averageX, do
     return covariance;
 }
 
-float variance(u_int vec[], u_int n, float average){
-    float sum = 0.0;
+// -------------------------- VARIÂNCIA ------------------------------------
+double variance(u_int vec[], u_int n, double average){
+    double sum = 0.0, result;
 
     for(u_int k = 0; k < n; k++){
-        sum += (((float)vec[k] - average)*((float)vec[k] - average));
+        sum += ((((double)vec[k]) - average)*(((double)vec[k]) - average));
     }
+    result = sum / n;
 
-    return sum / n;
+    return result;
 }
 
+// ------------------------- MATRIZ INVERSA --------------------------------
 double *inverse(double matrix[]){
     double det;
     double *m_inverse;
@@ -77,3 +83,114 @@ double *inverse(double matrix[]){
 
     return m_inverse;
 }
+
+// ---------------------------- VALOR MÁXIMO --------------------------------
+u_int maxFind(u_int m[], u_int n){
+    u_int result = 0;
+
+    for(u_int k = 0; k < n; k++){
+        if(m[k] > result){
+            result = m[k];
+        }
+    }
+
+    //printf("%d    %d", j, result);
+    return result;
+}
+
+int maxFind(int m[], u_int n){
+    int result = 0;
+
+    for(u_int k = 0; k < n; k++){
+        if(m[k] > result)
+            result = m[k];
+    }
+    return result;
+}
+
+float maxFind(float m[], u_int n){
+    float result = 0;
+
+    for(u_int k = 0; k < n; k++){
+        if(m[k] > result)
+            result = m[k];
+    }
+    return result;
+}
+
+double maxFind(double m[], u_int n){
+    double result = 0;
+
+    for(u_int k = 0; k < n; k++){
+        if(m[k] > result){
+            result = m[k];
+        }
+    }
+
+    return result;
+}
+
+// ----------------------------- PARAMETRIZAR ---------------------------------------
+void parameterize(u_int m[], u_int n, u_int mx, u_int p_e){
+
+    for(u_int k = 0; k < n; k++){
+        m[k] = (u_int)((p_e * m[k]) / mx);
+    }
+
+}
+
+void parameterize(int m[], u_int n, int mx, u_int p_e){
+
+    for(u_int k = 0; k < n; k++){
+        m[k] = (u_int)((p_e * m[k]) / mx);
+    }
+
+}
+
+void parameterize(double m[], u_int n, double mx, u_int p_e){
+
+    for(u_int k = 0; k < n; k++){
+        m[k] = (((double)p_e * m[k]) / mx);
+        //printf("%.6f\n", result[k]);
+    }
+}
+
+void parameterize(float m[], u_int n, float mx, u_int p_e){
+
+    for(u_int k = 0; k < n; k++){
+        m[k] = (((float)p_e * m[k]) / mx);
+        //printf("%.6f\n", result[k]);
+    }
+}
+
+void parameterize(u_int m[], u_int n, u_int mx, u_int p_b, u_int p_e){
+
+    for(u_int k = 0; k < n; k++){
+        m[k] = (u_int) ((p_e * (m[k] -  p_b)) / (mx - p_b));
+        //printf("%.6f\n", result[k]);
+    }
+
+}
+
+void parameterize(double m[], u_int n, double mx, u_int p_b, u_int p_e){
+
+    for(u_int k = 0; k < n; k++){
+        m[k] = (((double)p_e * (m[k] - (double) p_b)) / (mx - p_b));
+        //printf("%.6f\n", result[k]);
+    }
+
+}
+
+// ------------------------- INVERTER VALORES ----------------------------------
+void reverseValue(u_int m[], u_int n, u_int mx){
+    for(u_int k = 0; k < n; k++){
+        m[k] = mx - m[k];
+    }
+}
+
+void reverseValue(double m[], u_int n, double mx){
+    for(u_int k = 0; k < n; k++){
+        m[k] = mx - m[k];
+    }
+}
+

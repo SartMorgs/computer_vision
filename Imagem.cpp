@@ -1,61 +1,8 @@
 #include <iostream>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 #include "vector_oper.cpp"
-
-using namespace std;
-
-typedef unsigned int u_int;
-typedef struct pixel{
-	u_int r, g, b, i;
-}PIXEL;
-
-class Imagem{
-	private:
-		u_int width, height, n;
-		char type[2];
-		PIXEL *px;
-	public:
-		// Componentes necessários da imagem
-		void setWidth(u_int w);
-		u_int getWidth();
-		void setHeight(u_int h);
-		u_int getHeight();
-		void setType(char t[]);
-		char* getType();
-		void setPGM(PIXEL* pgm);
-		void setPPM(PIXEL* ppm);
-		void setImg(PIXEL* pgm, PIXEL* ppm, PIXEL* img, u_int w, u_int h);
-		PIXEL* getImg();
-
-		// Funções de leitura e escrita
-		void readPGM(FILE* arq, const char* filename);
-		void writePGM(FILE* arq, const char* filename);
-		void readPPM(FILE* arq, const char* filename);
-		void writePPM(FILE* arq, const char* filename);
-
-		// Funções de escala cinza
-		void thresholdGray(u_int th);
-		void thresholdGray(u_int thlow, u_int thhigh);
-		void inverseGray();
-		void addGray(unsigned char value);
-
-		// Funções de RGB
-		void inverseColor();
-		void addColor(unsigned char value);
-		void addColor(unsigned char valueR, unsigned char valueG, unsigned char valueB);
-		void rgb2Gray();
-		void thresholdRGB(u_int thR, u_int thG, u_int thB);
-		void thresholdRGB(u_int thRlow, u_int thRhigh, u_int thGlow, u_int thGhigh, u_int thBlow, u_int thBhigh);
-
-		// Funções distância
-		void normL1(u_int refR, u_int refG, u_int refB, u_int th);
-		void normL2(u_int refR, u_int refG, u_int refB, u_int th);
-		void normMahalanobis(u_int *vectorR, u_int *vectorG, u_int *vectorB, u_int n, u_int th);
-		void normKneighbors(u_int *vectorR, u_int *vectorG, u_int *vectorB, u_int s, u_int numOrb, u_int th);
-
-};
+#include <Imagem.h>
 
 void Imagem::setWidth(u_int w){
 	width = w;
@@ -93,6 +40,15 @@ void Imagem::setPPM(PIXEL* ppm){
         px[k].r = ppm[k].r;
         px[k].g = ppm[k].g;
         px[k].b = ppm[k].b;
+        px[k].i = (u_int) ((ppm[k].r + ppm[k].g + ppm[k].b) / 3);
+    }
+}
+
+void Imagem::setPPM(u_int R[], u_int G[], u_int B[]){
+    for(u_int k = 0; k < n; k++){
+        px[k].r = R[k];
+        px[k].g = G[k];
+        px[k].b = B[k];
     }
 }
 
@@ -102,6 +58,42 @@ void Imagem::setImg(PIXEL* pgm, PIXEL* ppm, PIXEL* img, u_int w, u_int h){
 
 PIXEL* Imagem::getImg(){
     return px;
+}
+
+u_int* Imagem::getR(){
+    u_int *result;
+
+    result = (u_int*) malloc(n*sizeof(u_int));
+
+    for(u_int k = 0; k < n; k++){
+        result[k] = px[k].r;
+    }
+
+    return result;
+}
+
+u_int* Imagem::getG(){
+    u_int *result;
+
+    result = (u_int*) malloc(n*sizeof(u_int));
+
+    for(u_int k = 0; k < n; k++){
+        result[k] = px[k].g;
+    }
+
+    return result;
+}
+
+u_int* Imagem::getB(){
+    u_int *result;
+
+    result = (u_int*) malloc(n*sizeof(u_int));
+
+    for(u_int k = 0; k < n; k++){
+        result[k] = px[k].b;
+    }
+
+    return result;
 }
 
 void Imagem::readPGM(FILE* arq, const char* filename){
@@ -128,7 +120,6 @@ void Imagem::readPGM(FILE* arq, const char* filename){
 
 	fclose(arq);
 }
-
 
 void Imagem::writePGM(FILE* arq, const char* filename){
     u_int maxsize = 255;
@@ -176,7 +167,6 @@ void Imagem::readPPM(FILE* arq, const char* filename){
 
 	fclose(arq);
 }
-
 
 void Imagem::writePPM(FILE* arq, const char* filename){
     u_int maxsize = 255;
@@ -268,34 +258,6 @@ void Imagem::rgb2Gray(){
 	}
 }
 
-void Imagem::thresholdRGB(u_int thR, u_int thG, u_int thB){
-    for(u_int k = 0; k < n; k++){
-		if((u_int) px[k].r < thR) px[k].r = 255;
-		else px[k].r = 0;
-		if((u_int) px[k].g < thG) px[k].g = 255;
-		else px[k].g = 0;
-		if((u_int) px[k].b < thB) px[k].b = 255;
-		else px[k].b = 0;
-	}
-}
-
-void Imagem::thresholdRGB(u_int thRlow, u_int thRhigh, u_int thGlow, u_int thGhigh, u_int thBlow, u_int thBhigh){
-    for(u_int k = 0; k < n; k++){
-		if( ((u_int) px[k].r > thRlow) && ((u_int) px[k].r < thRhigh) &&
-            ((u_int) px[k].g > thGlow) && ((u_int) px[k].g < thGhigh) &&
-            ((u_int) px[k].b > thBlow) && ((u_int) px[k].b < thBhigh)){
-            px[k].r = 255;
-            px[k].g = 255;
-            px[k].b = 255;
-		}
-		else{
-            px[k].r = 0;
-            px[k].g = 0;
-            px[k].b = 0;
-		}
-	}
-}
-
 void Imagem::normL1(u_int refR, u_int refG, u_int refB, u_int th){
     int l1;
 
@@ -348,7 +310,6 @@ void Imagem::normMahalanobis(u_int *vectorR, u_int *vectorG, u_int *vectorB, u_i
     mB = average(vectorB, tam);
 
 
-
     //Linha 1
     mCovariance[0] = covariance(vectorR, vectorR, tam, mR, mR);
     mCovariance[1] = covariance(vectorR, vectorG, tam, mR, mG);
@@ -372,17 +333,10 @@ void Imagem::normMahalanobis(u_int *vectorR, u_int *vectorG, u_int *vectorB, u_i
 
     }
 
-    /*for(u_int k = 0; k < (width*height*3); k++){
-        printf("%.7f ", aux[k]);
-    }
-    */
 
     index = 0;
     for(u_int k = 0; k < (width * height); k++){
-        dist = sqrt(abs((aux[index] * (px[k].r - mR)) + (aux[index + 1] * (px[k].g - mG)) + (aux[index + 2] * (px[k].b - mB))));
-        //printf("%.4f\n", dist);
-        //printf("%.4f\n", (aux[index] * (px[k].r - mR)) + (aux[index + 1] * (px[k].g - mG)) + (aux[index + 2] * (px[k].b - mB)));
-
+        dist = sqrt((aux[index] * (px[k].r - mR)) + (aux[index + 1] * (px[k].g - mG)) + (aux[index + 2] * (px[k].b - mB)));
         index += 3;
         if(dist < (double)th){
             px[k].r = 0;
@@ -419,14 +373,11 @@ void Imagem::normKneighbors(u_int *vectorR, u_int *vectorG, u_int *vectorB, u_in
         mG = average(vectorG, (i*sizeSeg - sizeSeg), (i*sizeSeg));
         mB = average(vectorB, (i*sizeSeg - sizeSeg), (i*sizeSeg));
 
-        //printf("%.4f  %.4f  %.4f \n", mR, mG, mB);
-
         for(u_int k = 0; k < (width*height); k++){
             de = ((px[k].r - mR)*(px[k].r - mR)) + ((px[k].g - mG)*(px[k].g - mG)) + ((px[k].b - mB)*(px[k].b - mB));
 
+
             if(sqrt(de) < (double)th){
-                //printf("%.2f  %.2f  %.2f\n", (px[k].r - mR), (px[k].g - mG), (px[k].b - mB));
-                //printf("%.4f\n", sqrt(de));
                 aux[k].r = 0;
                 aux[k].g = 0;
                 aux[k].b = 0;
@@ -441,3 +392,714 @@ void Imagem::normKneighbors(u_int *vectorR, u_int *vectorG, u_int *vectorB, u_in
     setPPM(aux);
 }
 
+double* Imagem::findWeightArray(u_int s){
+    u_int cnt_l, cnt_c, cnt_k, cont, k, mx;
+    u_int *sampleR, *sampleG, *sampleB;
+    int posY, posX;
+    double vrR, vrG, vrB, avR, avG, avB;;
+    double *w;
+
+    sampleR = (u_int*) malloc(s*s*sizeof(u_int));
+    sampleG = (u_int*) malloc(s*s*sizeof(u_int));
+    sampleB = (u_int*) malloc(s*s*sizeof(u_int));
+
+    w = (double*) malloc(n*3*sizeof(double));
+
+    cont = 0;
+
+    for(u_int i_line = 0; i_line < height; i_line++){
+        for(u_int i_column = 0; i_column < width; i_column++){
+            k = i_line*width + i_column;
+
+            // Set 0 para variáveis auxiliares
+            cnt_l = 0; cnt_c = 0;
+            posY = 0; posX = 0;
+
+            while(1){
+                posY = (i_line - (s / 2) + cnt_l);
+                posX = (i_column - (s / 2) + cnt_c);
+
+                // trata as bordas superiores
+                if(posY < 0){
+                    if(posX < 0)
+                        cnt_k = (height + posY) * width + (width + posX);
+                    else if(posX >= width)
+                        cnt_k = (height + posY) * width + (width - posX);
+                    else
+                        cnt_k = (height + posY) * width + posX;
+                }
+                // trata as bordas inferiores
+                else if(posY >= height){
+                    if(posX < 0)
+                        cnt_k = (height - posY) * width + (width + posX);
+                    else if(posX >= width)
+                        cnt_k = (height - posY) * width + (width - posX);
+                    else
+                        cnt_k = (height - posY) * width + posX;
+                }
+                // trata as bordas laterais
+                else{
+                    if(posX < 0)
+                        cnt_k = posY * width + (width + posX);
+                    else if(posX >= width)
+                        cnt_k = posY * width + (width - posX);
+                    else
+                        cnt_k = posY * width + posX;
+                }
+                if(cnt_l == (s-1) && cnt_c == (s-1)){
+                    sampleR[cnt_l*s + cnt_c] = px[cnt_k].r;
+                    sampleG[cnt_l*s + cnt_c] = px[cnt_k].g;
+                    sampleB[cnt_l*s + cnt_c] = px[cnt_k].b;
+                    break;
+                }
+                else{
+                    sampleR[cnt_l*s + cnt_c] = px[cnt_k].r;
+                    sampleG[cnt_l*s + cnt_c] = px[cnt_k].g;
+                    sampleB[cnt_l*s + cnt_c] = px[cnt_k].b;
+                    cnt_c++;
+                }
+                if(cnt_c == s){
+                    cnt_l++;
+                    cnt_c = 0;
+                }
+            }
+
+            // Média dos pontos
+            avR = average(sampleR, s*s); avG = average(sampleG, s*s); avB = average(sampleB, s*s);
+            // Variância dos pontos
+            vrR = variance(sampleR, s*s, avR); vrG = variance(sampleG, s*s, avG); vrB = variance(sampleB, s*s, avB);
+
+            // Cálculo dos pesos
+            w[cont] = vrR;
+            w[cont+1] = vrG;
+            w[cont+2] = vrB;
+            cont += 3;
+        }
+    }
+
+    mx = maxFind(w, n*3);
+    parameterize(w, n*3, mx, 1, 20);
+    reverseValue(w, n*3, 20);
+
+    return w;
+}
+
+void Imagem::filter(int kernel[], u_int s, u_int w){
+    PIXEL *result;
+    u_int k = 0, sumR, sumG, sumB, cnt_l = 0, cnt_c = 0, cnt_k = 0, maxR = 0, maxG = 0, maxB = 0;
+    u_int *vectR, *vectG, *vectB;
+    int posY, posX;
+    bool flag;
+
+    result = (PIXEL*) malloc(n*sizeof(PIXEL));
+    vectR = (u_int*) malloc(n*sizeof(u_int));
+    vectG = (u_int*) malloc(n*sizeof(u_int));
+    vectB = (u_int*) malloc(n*sizeof(u_int));
+
+    for(u_int i_line = 0; i_line < height; i_line++){
+        for(u_int i_column = 0; i_column < width; i_column++){
+            k = i_line*width + i_column;
+
+            // Set 0 para variáveis auxiliares
+            cnt_l = 0; cnt_c = 0;
+            sumR = 0; sumG = 0; sumB = 0;
+            posY = 0; posX = 0;
+            flag = false;
+
+            while(flag != true){
+                posY = (i_line - (s / 2) + cnt_l);
+                posX = (i_column - (s / 2) + cnt_c);
+
+                // trata as bordas superiores
+                if(posY < 0){
+                    if(posX < 0)
+                        cnt_k = (height + posY) * width + (width + posX);
+                    else if(posX >= width)
+                        cnt_k = (height + posY) * width + (width - posX);
+                    else
+                        cnt_k = (height + posY) * width + posX;
+                }
+                // trata as bordas inferiores
+                else if(posY >= height){
+                    if(posX < 0)
+                        cnt_k = (height - posY) * width + (width + posX);
+                    else if(posX >= width)
+                        cnt_k = (height - posY) * width + (width - posX);
+                    else
+                        cnt_k = (height - posY) * width + posX;
+                }
+                // trata as bordas laterais
+                else{
+                    if(posX < 0)
+                        cnt_k = posY * width + (width + posX);
+                    else if(posX >= width)
+                        cnt_k = posY * width + (width - posX);
+                    else
+                        cnt_k = posY * width + posX;
+                }
+                if(cnt_l == (s-1) && cnt_c == (s-1)){
+                    sumR += kernel[cnt_l*s + cnt_c]*px[cnt_k].r;
+                    sumG += kernel[cnt_l*s + cnt_c]*px[cnt_k].g;
+                    sumB += kernel[cnt_l*s + cnt_c]*px[cnt_k].b;
+                    flag = true;
+                }
+                else{
+                    sumR += kernel[cnt_l*s + cnt_c]*px[cnt_k].r;
+                    sumG += kernel[cnt_l*s + cnt_c]*px[cnt_k].g;
+                    sumB += kernel[cnt_l*s + cnt_c]*px[cnt_k].b;
+                    cnt_c++;
+                }
+                if(cnt_c == s){
+                    cnt_l++;
+                    cnt_c = 0;
+                }
+            }
+            result[k].r = w*sumR; result[k].g = w*sumG; result[k].b = w*sumB;
+        }
+    }
+
+    // Normalizando os valores dos pixels entre 0 e 255
+    for(u_int k = 0; k < n; k++){
+        vectR[k] = result[k].r;
+        vectG[k] = result[k].g;
+        vectB[k] = result[k].b;
+    }
+    maxR = maxFind(vectR, n);
+    maxG = maxFind(vectG, n);
+    maxB = maxFind(vectB, n);
+    parameterize(vectR, n, maxR, 255);
+    parameterize(vectG, n, maxG, 255);
+    parameterize(vectB, n, maxB, 255);
+
+    setPPM(vectR, vectG, vectB);
+}
+
+void Imagem::filter(int kernel[], u_int s, double w[]){
+    PIXEL *result;
+    u_int k = 0, cnt_l = 0, cnt_c = 0, cnt_k = 0, maxR = 0, maxG = 0, maxB = 0, cont = 0, sumR, sumG, sumB;
+    double *vectR, *vectG, *vectB;
+    int posY, posX;
+
+    result = (PIXEL*) malloc(n*sizeof(PIXEL));
+    vectR = (double*) malloc(n*sizeof(double));
+    vectG = (double*) malloc(n*sizeof(double));
+    vectB = (double*) malloc(n*sizeof(double));
+
+
+    for(u_int i_line = 0; i_line < height; i_line++){
+        for(u_int i_column = 0; i_column < width; i_column++){
+            k = i_line*width + i_column;
+
+            // Set 0 para variáveis auxiliares
+            cnt_l = 0; cnt_c = 0;
+            sumR = 0; sumG = 0; sumB = 0;
+            posY = 0; posX = 0;
+
+            while(1){
+                posY = (i_line - (s / 2) + cnt_l);
+                posX = (i_column - (s / 2) + cnt_c);
+
+                // trata as bordas superiores
+                if(posY < 0){
+                    if(posX < 0)
+                        cnt_k = (height + posY) * width + (width + posX);
+                    else if(posX >= width)
+                        cnt_k = (height + posY) * width + (width - posX);
+                    else
+                        cnt_k = (height + posY) * width + posX;
+                }
+                // trata as bordas inferiores
+                else if(posY >= height){
+                    if(posX < 0)
+                        cnt_k = (height - posY) * width + (width + posX);
+                    else if(posX >= width)
+                        cnt_k = (height - posY) * width + (width - posX);
+                    else
+                        cnt_k = (height - posY) * width + posX;
+                }
+                // trata as bordas laterais
+                else{
+                    if(posX < 0)
+                        cnt_k = posY * width + (width + posX);
+                    else if(posX >= width)
+                        cnt_k = posY * width + (width - posX);
+                    else
+                        cnt_k = posY * width + posX;
+                }
+                if(cnt_l == (s-1) && cnt_c == (s-1)){
+                    sumR += kernel[cnt_l*s + cnt_c]*px[cnt_k].r;
+                    sumG += kernel[cnt_l*s + cnt_c]*px[cnt_k].g;
+                    sumB += kernel[cnt_l*s + cnt_c]*px[cnt_k].b;
+                    break;
+                }
+                else{
+                    sumR += kernel[cnt_l*s + cnt_c]*px[cnt_k].r;
+                    sumG += kernel[cnt_l*s + cnt_c]*px[cnt_k].g;
+                    sumB += kernel[cnt_l*s + cnt_c]*px[cnt_k].b;
+                    cnt_c++;
+                }
+                if(cnt_c == s){
+                    cnt_l++;
+                    cnt_c = 0;
+                }
+            }
+            vectR[k] = w[cont] * sumR; vectG[k] = w[cont + 1] * sumG; vectB[k] = w[cont + 2] * sumB;
+            cont += 3;
+        }
+    }
+
+    maxG = maxFind(vectG, n);
+    maxR = maxFind(vectR, n);
+    maxB = maxFind(vectB, n);
+    parameterize(vectR, n, maxR, 255);
+    parameterize(vectG, n, maxG, 255);
+    parameterize(vectB, n, maxB, 255);
+
+    for(u_int j = 0; j < n; j++){
+        result[j].r = (u_int) vectR[j];
+        result[j].g = (u_int) vectG[j];
+        result[j].b = (u_int) vectB[j];
+    }
+
+    setPPM(result);
+}
+
+void Imagem::edgeRoberts(u_int th){
+    u_int k;
+    double mx;
+    int Gx[4] = {0, 1, -1, 0};
+    int Gy[4] = {1, 0, 0, -1};
+    int *convX, *convY;
+    double *vectG;
+
+    convX = (int*) malloc((width-1)*(height-1)*sizeof(int));
+    convY = (int*) malloc((width-1)*(height-1)*sizeof(int));
+    vectG = (double*) malloc(n*sizeof(double));
+
+    for(u_int i_line = 0; i_line < height; i_line++){
+        for(u_int i_column = 0; i_column < width; i_column++){
+            k = i_line*width + i_column;
+
+            // Posições fora da borda inferior e borda direita da matriz
+            if(i_line < (height-1) && i_column < (width-1)){
+                // Convolução em X e em Y
+                convX[k] =  Gx[0]*px[k].i + Gx[1]*px[k + 1].i + Gx[2]*px[k + width].i + Gx[3]*px[k + width + 1].i;
+                convY[k] =  Gy[0]*px[k].i + Gy[1]*px[k + 1].i + Gy[2]*px[k + width].i + Gy[3]*px[k + width + 1].i;
+
+                vectG[k] = sqrt( ((double)convX[k]*convX[k]) + ((double)convY[k]*convY[k]) );
+            }
+            else{
+                //printf("k = %d\n", k);
+                vectG[k] = 0;
+            }
+        }
+    }
+
+    mx = maxFind(vectG, n);
+    parameterize(vectG, n, mx, 255);
+
+    for(u_int j = 0; j < n; j++){
+        px[j].i = (u_int) vectG[j];
+    }
+
+    thresholdGray(th);
+}
+
+void Imagem::edgeSobel(u_int th){
+    u_int k, mx;
+    int Gx[9] = {   1, 2, 1,
+                    0, 0, 0,
+                    -1, -2, -1};
+    int Gy[9] = {   1, 0, -1,
+                    2, 0, -2,
+                    1, 0, -1};
+    int *convX, *convY;
+    u_int *vectGray;
+
+    convX = (int*) malloc(n*sizeof(int));
+    convY = (int*) malloc(n*sizeof(int));
+    vectGray = (u_int*) malloc(n*sizeof(u_int));
+
+    for(u_int i_line = 0; i_line < height; i_line++){
+        for(u_int i_column = 0; i_column < width; i_column++){
+            k = i_line*width + i_column;
+
+            // Posições fora das bordas da matriz
+            if((i_line < (height-1)) && (i_column < (width-1)) && (i_line > 0) && (i_column > 0)){
+                // Convolução em X e em Y
+                convX[k] =  Gx[0]*px[k - width - 1].i + Gx[1]*px[k - width].i + Gx[2]*px[k - width + 1].i +
+                            Gx[3]*px[k - 1].i + Gx[4]*px[k].i + Gx[5]*px[k + 1].i +
+                            Gx[6]*px[k + width - 1].i + Gx[7]*px[k + width].i + Gx[8]*px[k + width + 1].i;
+                convY[k] =  Gy[0]*px[k - width - 1].i + Gy[1]*px[k - width].i + Gy[2]*px[k - width + 1].i +
+                            Gy[3]*px[k - 1].i + Gy[4]*px[k].i + Gy[5]*px[k + 1].i +
+                            Gy[6]*px[k + width - 1].i + Gy[7]*px[k + width].i + Gy[8]*px[k + width + 1].i;
+            }
+            else{
+                if(i_line == 0){
+                    if(i_column == 0){
+                        convX[k] =  Gx[0]*px[n - 1].i + Gx[1]*px[n - width].i + Gx[2]*px[n - width + 1].i +
+                                    Gx[3]*px[width - 1].i + Gx[4]*px[k].i + Gx[5]*px[k + 1].i +
+                                    Gx[6]*px[2*width - 1].i + Gx[7]*px[k + width].i + Gx[8]*px[k + width + 1].i;
+                        convY[k] =  Gy[0]*px[n - 1].i + Gy[1]*px[n - width].i + Gy[2]*px[n - width + 1].i +
+                                    Gy[3]*px[width - 1].i + Gy[4]*px[k].i + Gy[5]*px[k + 1].i +
+                                    Gy[6]*px[2*width - 1].i + Gy[7]*px[k + width].i + Gy[8]*px[k + width + 1].i;
+                    }
+                    else if(i_column == (width - 1)){
+                        convX[k] =  Gx[0]*px[n - 2].i + Gx[1]*px[n - 1].i + Gx[2]*px[n - width].i +
+                                    Gx[3]*px[k - 1].i + Gx[4]*px[k].i + Gx[5]*px[0].i +
+                                    Gx[6]*px[k + width - 1].i + Gx[7]*px[k + width].i + Gx[8]*px[k + 1].i;
+                        convY[k] =  Gy[0]*px[n - 2].i + Gy[1]*px[n - 1].i + Gy[2]*px[n - width].i +
+                                    Gy[3]*px[k - 1].i + Gy[4]*px[k].i + Gy[5]*px[0].i +
+                                    Gy[6]*px[k + width - 1].i + Gy[7]*px[k + width].i + Gy[8]*px[k + 1].i;
+                    }
+                    else{
+                        convX[k] =  Gx[0]*px[n - width + k - 1].i + Gx[1]*px[n - width + k].i + Gx[2]*px[n - width + k + 1].i +
+                                    Gx[3]*px[k - 1].i + Gx[4]*px[k].i + Gx[5]*px[k + 1].i +
+                                    Gx[6]*px[k + width - 1].i + Gx[7]*px[k + width].i + Gy[8]*px[k + width + 1].i;
+                        convY[k] =  Gy[0]*px[n - width + k - 1].i + Gy[1]*px[n - width + k].i + Gy[2]*px[n - width + k + 1].i +
+                                    Gy[3]*px[k - 1].i + Gy[4]*px[k].i + Gy[5]*px[k + 1].i +
+                                    Gy[6]*px[k + width - 1].i + Gy[7]*px[k + width].i + Gy[8]*px[k + width + 1].i;
+                    }
+                }
+                else if(i_line == (height - 1)){
+                    if(i_column == 0){
+                        convX[k] =  Gx[0]*px[k - 1].i + Gx[1]*px[k - width].i + Gx[2]*px[k - width + 1].i +
+                                    Gx[3]*px[n - 1].i + Gx[4]*px[k].i + Gx[5]*px[k + 1].i +
+                                    Gx[6]*px[width - 1].i + Gx[7]*px[0].i + Gx[8]*px[1].i;
+                        convY[k] =  Gy[0]*px[k - 1].i + Gy[1]*px[k - width].i + Gy[2]*px[k - width + 1].i +
+                                    Gy[3]*px[n - 1].i + Gy[4]*px[k].i + Gy[5]*px[k + 1].i +
+                                    Gy[6]*px[width - 1].i + Gy[7]*px[0].i + Gy[8]*px[1].i;
+                    }
+                    else if(i_column == (width - 1)){
+                        convX[k] =  Gx[0]*px[n - width - 2].i + Gx[1]*px[n - width - 1].i + Gx[2]*px[k - width - (k % width)].i +
+                                    Gx[3]*px[k - 1].i + Gx[4]*px[k].i + Gx[5]*px[n - width].i +
+                                    Gx[6]*px[width - 2].i + Gx[7]*px[width - 1].i + Gx[8]*px[0].i;
+                        convY[k] =  Gy[0]*px[n - width - 2].i + Gy[1]*px[n - width - 1].i + Gy[2]*px[k - width - (k % width)].i +
+                                    Gy[3]*px[k - 1].i + Gy[4]*px[k].i + Gy[5]*px[n - width].i +
+                                    Gy[6]*px[width - 2].i + Gy[7]*px[width - 1].i + Gy[8]*px[0].i;
+                    }
+                    else{
+                        convX[k] =  Gx[0]*px[k - width - 1].i + Gx[1]*px[k - width].i + Gx[2]*px[k - width + 1].i +
+                                    Gx[3]*px[k - 1].i + Gx[4]*px[k].i + Gx[5]*px[k + 1].i +
+                                    Gx[6]*px[(k % width) - 1].i + Gx[7]*px[(k % width)].i + Gx[8]*px[(k % width) + 1].i;
+                        convY[k] =  Gy[0]*px[k - width - 1].i + Gy[1]*px[k - width].i + Gy[2]*px[k - width + 1].i +
+                                    Gy[3]*px[k - 1].i + Gy[4]*px[k].i + Gy[5]*px[k + 1].i +
+                                    Gy[6]*px[(k % width) - 1].i + Gy[7]*px[(k % width)].i + Gy[8]*px[(k % width) + 1].i;
+                    }
+                }
+                else{
+                    if(i_column == 0){
+                        convX[k] =  Gx[0]*px[k - 1].i + Gx[1]*px[k - width].i + Gx[2]*px[k - width + 1].i +
+                                    Gx[3]*px[k + width - 1].i + Gx[4]*px[k].i + Gx[5]*px[k + 1].i +
+                                    Gx[6]*px[k + 2*width - 1].i + Gx[7]*px[k + width].i + Gx[8]*px[k + width + 1].i;
+                        convY[k] =  Gy[0]*px[k - 1].i + Gy[1]*px[k - width].i + Gy[2]*px[k - width + 1].i +
+                                    Gy[3]*px[k + width - 1].i + Gy[4]*px[k].i + Gy[5]*px[k + 1].i +
+                                    Gy[6]*px[k + 2*width - 1].i + Gy[7]*px[k + width].i + Gy[8]*px[k + width + 1].i;
+                    }
+                    else if(i_column == (width - 1)){
+                        convX[k] =  Gx[0]*px[k - width - 1].i + Gx[1]*px[k - width].i + Gx[2]*px[k - width - (k % width)].i +
+                                    Gx[3]*px[k - 1].i + Gx[4]*px[k].i + Gx[5]*px[k - (k % width)].i +
+                                    Gx[6]*px[k + width - 1].i + Gx[7]*px[k + width].i + Gx[8]*px[k + 1].i;
+                        convY[k] =  Gy[0]*px[k - width - 1].i + Gy[1]*px[k - width].i + Gy[2]*px[k - width - (k % width)].i +
+                                    Gy[3]*px[k - 1].i + Gy[4]*px[k].i + Gy[5]*px[k - (k % width)].i +
+                                    Gy[6]*px[k + width - 1].i + Gy[7]*px[k + width].i + Gy[8]*px[k + 1].i;
+                    }
+                }
+            }
+            vectGray[k] = (u_int) abs((float)convX[k]) + abs((float)convY[k]);
+            //vectGray[k] = (double)grad;
+            //printf("%d   %.4f\n", k, vectGray[k]);
+        }
+    }
+
+    mx = maxFind(vectGray, n);
+    parameterize(vectGray, n, mx, 255);
+
+    for(u_int j = 0; j < n; j++){
+        px[j].i = vectGray[j];
+    }
+
+    thresholdGray(th);
+}
+
+void Imagem::edgeRobinson(u_int th){
+    int G[8][9] = { {1, 2, 1, 0, 0, 0, -1, -2, -1},
+                    {2, 1, 0, 1, 0, -1, 0, -1, -2},
+                    {1, 0, -1, 2, 0, -2, 0, 0, -1},
+                    {0, -1, -2, 1, 0, -1, 2, 1, 0},
+                    {-1, -2, -1, 0, 0, 0, 1, 2, 1},
+                    {-2, -1, 0, -1, 0, 1, 0, 1, 2},
+                    {-1, 0, 1, -2, 0, 2, 0, 0, 1},
+                    {0, 1, 2, -1, 0, 1, -2, -1, 0}  };
+    u_int k;
+    int mx;
+    int *vectGray, *conv;
+
+
+    vectGray = (int*) malloc(n*sizeof(int));
+    conv = (int*) malloc(8*sizeof(int));
+
+    for(u_int i_line = 0; i_line < height; i_line++){
+        for(u_int i_column = 0; i_column < width; i_column++){
+            k = i_line*width + i_column;
+
+            // Posições fora das bordas da matriz
+            if(i_line < (height-1) && i_column < (width-1) && i_line > 0 && i_column > 0){
+                //printf("AQUI 1\n");
+                conv[0] =   G[0][0]*px[k - width - 1].i + G[0][1]*px[k - width].i + G[0][2]*px[k - width + 1].i +
+                            G[0][3]*px[k - 1].i + G[0][4]*px[k].i + G[0][5]*px[k + 1].i +
+                            G[0][6]*px[k + width - 1].i + G[0][7]*px[k + width].i + G[0][8]*px[k + width + 1].i;
+
+                conv[1] =   G[1][0]*px[k - width - 1].i + G[1][1]*px[k - width].i + G[1][2]*px[k - width + 1].i +
+                            G[1][3]*px[k - 1].i + G[1][4]*px[k].i + G[1][5]*px[k + 1].i +
+                            G[1][6]*px[k + width - 1].i + G[1][7]*px[k + width].i + G[1][8]*px[k + width + 1].i;
+
+                conv[2] =   G[2][0]*px[k - width - 1].i + G[2][1]*px[k - width].i + G[2][2]*px[k - width + 1].i +
+                            G[2][3]*px[k - 1].i + G[2][4]*px[k].i + G[2][5]*px[k + 1].i +
+                            G[2][6]*px[k + width - 1].i + G[2][7]*px[k + width].i + G[2][8]*px[k + width + 1].i;
+
+                conv[3] =   G[3][0]*px[k - width - 1].i + G[3][1]*px[k - width].i + G[3][2]*px[k - width + 1].i +
+                            G[3][3]*px[k - 1].i + G[3][4]*px[k].i + G[3][5]*px[k + 1].i +
+                            G[3][6]*px[k + width - 1].i + G[3][7]*px[k + width].i + G[3][8]*px[k + width + 1].i;
+
+                conv[4] =   G[4][0]*px[k - width - 1].i + G[4][1]*px[k - width].i + G[4][2]*px[k - width + 1].i +
+                            G[4][3]*px[k - 1].i + G[4][4]*px[k].i + G[4][5]*px[k + 1].i +
+                            G[4][6]*px[k + width - 1].i + G[4][7]*px[k + width].i + G[4][8]*px[k + width + 1].i;
+
+                conv[5] =   G[5][0]*px[k - width - 1].i + G[5][1]*px[k - width].i + G[5][2]*px[k - width + 1].i +
+                            G[5][3]*px[k - 1].i + G[5][4]*px[k].i + G[5][5]*px[k + 1].i +
+                            G[5][6]*px[k + width - 1].i + G[5][7]*px[k + width].i + G[5][8]*px[k + width + 1].i;
+
+                conv[6] =   G[6][0]*px[k - width - 1].i + G[6][1]*px[k - width].i + G[6][2]*px[k - width + 1].i +
+                            G[6][3]*px[k - 1].i + G[6][4]*px[k].i + G[6][5]*px[k + 1].i +
+                            G[6][6]*px[k + width - 1].i + G[6][7]*px[k + width].i + G[6][8]*px[k + width + 1].i;
+
+                conv[7] =   G[7][0]*px[k - width - 1].i + G[7][1]*px[k - width].i + G[7][2]*px[k - width + 1].i +
+                            G[7][3]*px[k - 1].i + G[7][4]*px[k].i + G[7][5]*px[k + 1].i +
+                            G[7][6]*px[k + width - 1].i + G[7][7]*px[k + width].i + G[7][8]*px[k + width + 1].i;
+
+            }
+            else{
+                //printf("AQUI 2\n");
+                if(i_line == 0){
+                    if(i_column == 0){
+                        conv[0] =   G[0][0]*px[n - 1].i + G[0][1]*px[n - width].i + G[0][2]*px[n - width + 1].i +
+                                    G[0][3]*px[width - 1].i + G[0][4]*px[k].i + G[0][5]*px[k + 1].i +
+                                    G[0][6]*px[2*width - 1].i + G[0][7]*px[k + width].i + G[0][8]*px[k + width + 1].i;
+
+                        conv[1] =   G[1][0]*px[n - 1].i + G[1][1]*px[n - width].i + G[1][2]*px[n - width + 1].i +
+                                    G[1][3]*px[width - 1].i + G[1][4]*px[k].i + G[1][5]*px[k + 1].i +
+                                    G[1][6]*px[2*width - 1].i + G[1][7]*px[k + width].i + G[1][8]*px[k + width + 1].i;
+
+                        conv[2] =   G[2][0]*px[n - 1].i + G[2][1]*px[n - width].i + G[2][2]*px[n - width + 1].i +
+                                    G[2][3]*px[width - 1].i + G[2][4]*px[k].i + G[2][5]*px[k + 1].i +
+                                    G[2][6]*px[2*width - 1].i + G[2][7]*px[k + width].i + G[2][8]*px[k + width + 1].i;
+
+                        conv[3] =   G[3][0]*px[n - 1].i + G[3][1]*px[n - width].i + G[3][2]*px[n - width + 1].i +
+                                    G[3][3]*px[width - 1].i + G[3][4]*px[k].i + G[3][5]*px[k + 1].i +
+                                    G[3][6]*px[2*width - 1].i + G[3][7]*px[k + width].i + G[3][8]*px[k + width + 1].i;
+
+                        conv[4] =   G[4][0]*px[n - 1].i + G[4][1]*px[n - width].i + G[4][2]*px[n - width + 1].i +
+                                    G[4][3]*px[width - 1].i + G[4][4]*px[k].i + G[4][5]*px[k + 1].i +
+                                    G[4][6]*px[2*width - 1].i + G[4][7]*px[k + width].i + G[4][8]*px[k + width + 1].i;
+
+                        conv[5] =   G[5][0]*px[n - 1].i + G[5][1]*px[n - width].i + G[5][2]*px[n - width + 1].i +
+                                    G[5][3]*px[width - 1].i + G[5][4]*px[k].i + G[5][5]*px[k + 1].i +
+                                    G[5][6]*px[2*width - 1].i + G[5][7]*px[k + width].i + G[5][8]*px[k + width + 1].i;
+
+                        conv[6] =   G[6][0]*px[n - 1].i + G[6][1]*px[n - width].i + G[6][2]*px[n - width + 1].i +
+                                    G[6][3]*px[width - 1].i + G[6][4]*px[k].i + G[6][5]*px[k + 1].i +
+                                    G[6][6]*px[2*width - 1].i + G[6][7]*px[k + width].i + G[6][8]*px[k + width + 1].i;
+
+                        conv[7] =   G[7][0]*px[n - 1].i + G[7][1]*px[n - width].i + G[7][2]*px[n - width + 1].i +
+                                    G[7][3]*px[width - 1].i + G[7][4]*px[k].i + G[7][5]*px[k + 1].i +
+                                    G[7][6]*px[2*width - 1].i + G[7][7]*px[k + width].i + G[7][8]*px[k + width + 1].i;
+                    }
+                    else if(i_column == (width - 1)){
+                        conv[0] =   G[0][0]*px[n - 2].i + G[0][1]*px[n - 1].i + G[0][2]*px[n - width].i +
+                                    G[0][3]*px[k - 1].i + G[0][4]*px[k].i + G[0][5]*px[k - (k % width)].i +
+                                    G[0][6]*px[k + width - 1].i + G[0][7]*px[k + width].i + G[0][8]*px[k + 1].i;
+
+                        conv[1] =   G[1][0]*px[n - 2].i + G[1][1]*px[n - 1].i + G[1][2]*px[n - width].i +
+                                    G[1][3]*px[k - 1].i + G[1][4]*px[k].i + G[1][5]*px[k - (k % width)].i +
+                                    G[1][6]*px[k + width - 1].i + G[1][7]*px[k + width].i + G[1][8]*px[k + 1].i;
+
+                        conv[2] =   G[2][0]*px[n - 2].i + G[2][1]*px[n - 1].i + G[2][2]*px[n - width].i +
+                                    G[2][3]*px[k - 1].i + G[2][4]*px[k].i + G[2][5]*px[k - (k % width)].i +
+                                    G[2][6]*px[k + width - 1].i + G[2][7]*px[k + width].i + G[2][8]*px[k + 1].i;
+
+                        conv[3] =   G[3][0]*px[n - 2].i + G[3][1]*px[n - 1].i + G[3][2]*px[n - width].i +
+                                    G[3][3]*px[k - 1].i + G[3][4]*px[k].i + G[3][5]*px[k - (k % width)].i +
+                                    G[3][6]*px[k + width - 1].i + G[3][7]*px[k + width].i + G[3][8]*px[k + 1].i;
+
+                        conv[4] =   G[4][0]*px[n - 2].i + G[4][1]*px[n - 1].i + G[4][2]*px[n - width].i +
+                                    G[4][3]*px[k - 1].i + G[4][4]*px[k].i + G[4][5]*px[k - (k % width)].i +
+                                    G[4][6]*px[k + width - 1].i + G[4][7]*px[k + width].i + G[4][8]*px[k + 1].i;
+
+                        conv[5] =   G[5][0]*px[n - 2].i + G[5][1]*px[n - 1].i + G[5][2]*px[n - width].i +
+                                    G[5][3]*px[k - 1].i + G[5][4]*px[k].i + G[5][5]*px[k - (k % width)].i +
+                                    G[5][6]*px[k + width - 1].i + G[5][7]*px[k + width].i + G[5][8]*px[k + 1].i;
+
+                        conv[6] =   G[6][0]*px[n - 2].i + G[6][1]*px[n - 1].i + G[6][2]*px[n - width].i +
+                                    G[6][3]*px[k - 1].i + G[6][4]*px[k].i + G[6][5]*px[k - (k % width)].i +
+                                    G[6][6]*px[k + width - 1].i + G[6][7]*px[k + width].i + G[6][8]*px[k + 1].i;
+
+                        conv[7] =   G[7][0]*px[n - 2].i + G[7][1]*px[n - 1].i + G[7][2]*px[n - width].i +
+                                    G[7][3]*px[k - 1].i + G[7][4]*px[k].i + G[7][5]*px[k - (k % width)].i +
+                                    G[7][6]*px[k + width - 1].i + G[7][7]*px[k + width].i + G[7][8]*px[k + 1].i;
+
+                    }
+                }
+                else if(i_line == (height - 1)){
+                    if(i_column == 0){
+                        conv[0] =   G[0][0]*px[k - 1].i + G[0][1]*px[k - width].i + G[0][2]*px[k - width + 1].i +
+                                    G[0][3]*px[n - 1].i + G[0][4]*px[k].i + G[0][5]*px[k + 1].i +
+                                    G[0][6]*px[width].i + G[0][7]*px[0].i + G[0][8]*px[1].i;
+
+                        conv[1] =   G[1][0]*px[k - 1].i + G[1][1]*px[k - width].i + G[1][2]*px[k - width + 1].i +
+                                    G[1][3]*px[n - 1].i + G[1][4]*px[k].i + G[1][5]*px[k + 1].i +
+                                    G[1][6]*px[width].i + G[1][7]*px[0].i + G[1][8]*px[1].i;
+
+                        conv[2] =   G[2][0]*px[k - 1].i + G[2][1]*px[k - width].i + G[2][2]*px[k - width + 1].i +
+                                    G[2][3]*px[n - 1].i + G[2][4]*px[k].i + G[2][5]*px[k + 1].i +
+                                    G[2][6]*px[width].i + G[2][7]*px[0].i + G[2][8]*px[1].i;
+
+                        conv[3] =   G[3][0]*px[k - 1].i + G[3][1]*px[k - width].i + G[3][2]*px[k - width + 1].i +
+                                    G[3][3]*px[n - 1].i + G[3][4]*px[k].i + G[3][5]*px[k + 1].i +
+                                    G[3][6]*px[width].i + G[3][7]*px[0].i + G[3][8]*px[1].i;
+
+                        conv[4] =   G[4][0]*px[k - 1].i + G[4][1]*px[k - width].i + G[4][2]*px[k - width + 1].i +
+                                    G[4][3]*px[n - 1].i + G[4][4]*px[k].i + G[4][5]*px[k + 1].i +
+                                    G[4][6]*px[width].i + G[4][7]*px[0].i + G[4][8]*px[1].i;
+
+                        conv[5] =   G[5][0]*px[k - 1].i + G[5][1]*px[k - width].i + G[5][2]*px[k - width + 1].i +
+                                    G[5][3]*px[n - 1].i + G[5][4]*px[k].i + G[5][5]*px[k + 1].i +
+                                    G[5][6]*px[width].i + G[5][7]*px[0].i + G[5][8]*px[1].i;
+
+                        conv[6] =   G[6][0]*px[k - 1].i + G[6][1]*px[k - width].i + G[6][2]*px[k - width + 1].i +
+                                    G[6][3]*px[n - 1].i + G[6][4]*px[k].i + G[6][5]*px[k + 1].i +
+                                    G[6][6]*px[width].i + G[6][7]*px[0].i + G[6][8]*px[1].i;
+
+                        conv[7] =   G[7][0]*px[k - 1].i + G[7][1]*px[k - width].i + G[7][2]*px[k - width + 1].i +
+                                    G[7][3]*px[n - 1].i + G[7][4]*px[k].i + G[7][5]*px[k + 1].i +
+                                    G[7][6]*px[width].i + G[7][7]*px[0].i + G[7][8]*px[1].i;
+
+                    }
+                    else if(i_column == (width - 1)){
+                        conv[0] =   G[0][0]*px[n - width - 1].i + G[0][1]*px[n - width].i + G[0][2]*px[k - width - (k % width)].i +
+                                    G[0][3]*px[k - 1].i + G[0][4]*px[k].i + G[0][5]*px[k - (k % width)].i +
+                                    G[0][6]*px[width - 2].i + G[0][7]*px[width - 1].i + G[0][8]*px[0].i;
+
+                        conv[1] =   G[1][0]*px[n - width - 1].i + G[1][1]*px[n - width].i + G[1][2]*px[k - width - (k % width)].i +
+                                    G[1][3]*px[k - 1].i + G[1][4]*px[k].i + G[1][5]*px[k - (k % width)].i +
+                                    G[1][6]*px[width - 2].i + G[1][7]*px[width - 1].i + G[1][8]*px[0].i;
+
+                        conv[2] =   G[2][0]*px[n - width - 1].i + G[2][1]*px[n - width].i + G[2][2]*px[k - width - (k % width)].i +
+                                    G[2][3]*px[k - 1].i + G[2][4]*px[k].i + G[2][5]*px[k - (k % width)].i +
+                                    G[2][6]*px[width - 2].i + G[2][7]*px[width - 1].i + G[2][8]*px[0].i;
+
+                        conv[3] =   G[3][0]*px[n - width - 1].i + G[3][1]*px[n - width].i + G[3][2]*px[k - width - (k % width)].i +
+                                    G[3][3]*px[k - 1].i + G[3][4]*px[k].i + G[3][5]*px[k - (k % width)].i +
+                                    G[3][6]*px[width - 2].i + G[3][7]*px[width - 1].i + G[3][8]*px[0].i;
+
+                        conv[4] =   G[4][0]*px[n - width - 1].i + G[4][1]*px[n - width].i + G[4][2]*px[k - width - (k % width)].i +
+                                    G[4][3]*px[k - 1].i + G[4][4]*px[k].i + G[4][5]*px[k - (k % width)].i +
+                                    G[4][6]*px[width - 2].i + G[4][7]*px[width - 1].i + G[4][8]*px[0].i;
+
+                        conv[5] =   G[5][0]*px[n - width - 1].i + G[5][1]*px[n - width].i + G[5][2]*px[k - width - (k % width)].i +
+                                    G[5][3]*px[k - 1].i + G[5][4]*px[k].i + G[5][5]*px[k - (k % width)].i +
+                                    G[5][6]*px[width - 2].i + G[5][7]*px[width - 1].i + G[5][8]*px[0].i;
+
+                        conv[6] =   G[6][0]*px[n - width - 1].i + G[6][1]*px[n - width].i + G[6][2]*px[k - width - (k % width)].i +
+                                    G[6][3]*px[k - 1].i + G[6][4]*px[k].i + G[6][5]*px[k - (k % width)].i +
+                                    G[6][6]*px[width - 2].i + G[6][7]*px[width - 1].i + G[6][8]*px[0].i;
+
+                        conv[7] =   G[7][0]*px[n - width - 1].i + G[7][1]*px[n - width].i + G[7][2]*px[k - width - (k % width)].i +
+                                    G[7][3]*px[k - 1].i + G[7][4]*px[k].i + G[7][5]*px[k - (k % width)].i +
+                                    G[7][6]*px[width - 2].i + G[7][7]*px[width - 1].i + G[7][8]*px[0].i;
+                    }
+                }
+                else{
+                    if(i_column == 0){
+                        conv[0] =   G[0][0]*px[k - 1].i + G[0][1]*px[k - width].i + G[0][2]*px[k - width + 1].i +
+                                    G[0][3]*px[k + width - 1].i + G[0][4]*px[k].i + G[0][5]*px[k + 1].i +
+                                    G[0][6]*px[k + 2*width - 1].i + G[0][7]*px[k + width].i + G[0][8]*px[k + width + 1].i;
+
+                        conv[1] =   G[1][0]*px[k - 1].i + G[1][1]*px[k - width].i + G[1][2]*px[k - width + 1].i +
+                                    G[1][3]*px[k + width - 1].i + G[1][4]*px[k].i + G[1][5]*px[k + 1].i +
+                                    G[1][6]*px[k + 2*width - 1].i + G[1][7]*px[k + width].i + G[1][8]*px[k + width + 1].i;
+
+                        conv[2] =   G[2][0]*px[k - 1].i + G[2][1]*px[k - width].i + G[2][2]*px[k - width + 1].i +
+                                    G[2][3]*px[k + width - 1].i + G[2][4]*px[k].i + G[2][5]*px[k + 1].i +
+                                    G[2][6]*px[k + 2*width - 1].i + G[2][7]*px[k + width].i + G[2][8]*px[k + width + 1].i;
+
+                        conv[3] =   G[3][0]*px[k - 1].i + G[3][1]*px[k - width].i + G[3][2]*px[k - width + 1].i +
+                                    G[3][3]*px[k + width - 1].i + G[3][4]*px[k].i + G[3][5]*px[k + 1].i +
+                                    G[3][6]*px[k + 2*width - 1].i + G[3][7]*px[k + width].i + G[3][8]*px[k + width + 1].i;
+
+                        conv[4] =   G[4][0]*px[k - 1].i + G[4][1]*px[k - width].i + G[4][2]*px[k - width + 1].i +
+                                    G[4][3]*px[k + width - 1].i + G[4][4]*px[k].i + G[4][5]*px[k + 1].i +
+                                    G[4][6]*px[k + 2*width - 1].i + G[4][7]*px[k + width].i + G[4][8]*px[k + width + 1].i;
+
+                        conv[5] =   G[5][0]*px[k - 1].i + G[5][1]*px[k - width].i + G[5][2]*px[k - width + 1].i +
+                                    G[5][3]*px[k + width - 1].i + G[5][4]*px[k].i + G[5][5]*px[k + 1].i +
+                                    G[5][6]*px[k + 2*width - 1].i + G[5][7]*px[k + width].i + G[5][8]*px[k + width + 1].i;
+
+                        conv[6] =   G[6][0]*px[k - 1].i + G[6][1]*px[k - width].i + G[6][2]*px[k - width + 1].i +
+                                    G[6][3]*px[k + width - 1].i + G[6][4]*px[k].i + G[6][5]*px[k + 1].i +
+                                    G[6][6]*px[k + 2*width - 1].i + G[6][7]*px[k + width].i + G[6][8]*px[k + width + 1].i;
+
+                        conv[7] =   G[7][0]*px[k - 1].i + G[7][1]*px[k - width].i + G[7][2]*px[k - width + 1].i +
+                                    G[7][3]*px[k + width - 1].i + G[7][4]*px[k].i + G[7][5]*px[k + 1].i +
+                                    G[7][6]*px[k + 2*width - 1].i + G[7][7]*px[k + width].i + G[7][8]*px[k + width + 1].i;
+                    }
+                    else if(i_column == (width - 1)){
+                        conv[0] =   G[0][0]*px[k - width - 1].i + G[0][1]*px[k - width].i + G[0][2]*px[k - width - (k % width)].i +
+                                    G[0][3]*px[k - 1].i + G[0][4]*px[k].i + G[0][5]*px[k - (k % width)].i +
+                                    G[0][6]*px[k + width - 1].i + G[0][7]*px[k + width].i + G[0][8]*px[k + 1].i;
+
+                        conv[1] =   G[1][0]*px[k - width - 1].i + G[1][1]*px[k - width].i + G[1][2]*px[k - width - (k % width)].i +
+                                    G[1][3]*px[k - 1].i + G[1][4]*px[k].i + G[1][5]*px[k - (k % width)].i +
+                                    G[1][6]*px[k + width - 1].i + G[1][7]*px[k + width].i + G[1][8]*px[k + 1].i;
+
+                        conv[2] =   G[2][0]*px[k - width - 1].i + G[2][1]*px[k - width].i + G[2][2]*px[k - width - (k % width)].i +
+                                    G[2][3]*px[k - 1].i + G[2][4]*px[k].i + G[2][5]*px[k - (k % width)].i +
+                                    G[2][6]*px[k + width - 1].i + G[2][7]*px[k + width].i + G[2][8]*px[k + 1].i;
+
+                        conv[3] =   G[3][0]*px[k - width - 1].i + G[3][1]*px[k - width].i + G[3][2]*px[k - width - (k % width)].i +
+                                    G[3][3]*px[k - 1].i + G[3][4]*px[k].i + G[3][5]*px[k - (k % width)].i +
+                                    G[3][6]*px[k + width - 1].i + G[3][7]*px[k + width].i + G[3][8]*px[k + 1].i;
+
+                        conv[4] =   G[4][0]*px[k - width - 1].i + G[4][1]*px[k - width].i + G[4][2]*px[k - width - (k % width)].i +
+                                    G[4][3]*px[k - 1].i + G[4][4]*px[k].i + G[4][5]*px[k - (k % width)].i +
+                                    G[4][6]*px[k + width - 1].i + G[4][7]*px[k + width].i + G[4][8]*px[k + 1].i;
+
+                        conv[5] =   G[5][0]*px[k - width - 1].i + G[5][1]*px[k - width].i + G[5][2]*px[k - width - (k % width)].i +
+                                    G[5][3]*px[k - 1].i + G[5][4]*px[k].i + G[5][5]*px[k - (k % width)].i +
+                                    G[5][6]*px[k + width - 1].i + G[5][7]*px[k + width].i + G[5][8]*px[k + 1].i;
+
+                        conv[6] =   G[6][0]*px[k - width - 1].i + G[6][1]*px[k - width].i + G[6][2]*px[k - width - (k % width)].i +
+                                    G[6][3]*px[k - 1].i + G[6][4]*px[k].i + G[6][5]*px[k - (k % width)].i +
+                                    G[6][6]*px[k + width - 1].i + G[6][7]*px[k + width].i + G[6][8]*px[k + 1].i;
+
+                        conv[7] =   G[7][0]*px[k - width - 1].i + G[7][1]*px[k - width].i + G[7][2]*px[k - width - (k % width)].i +
+                                    G[7][3]*px[k - 1].i + G[7][4]*px[k].i + G[7][5]*px[k - (k % width)].i +
+                                    G[7][6]*px[k + width - 1].i + G[7][7]*px[k + width].i + G[7][8]*px[k + 1].i;
+
+                    }
+                }
+            }
+            vectGray[k] = maxFind(conv, 8);
+        }
+    }
+    mx = maxFind(vectGray, n);
+    parameterize(vectGray, n, mx, 255);
+
+    for(u_int j = 0; j < n; j++){
+        px[j].i = (u_int) vectGray[j];
+    }
+
+    thresholdGray(th);
+
+    free(vectGray);
+}
